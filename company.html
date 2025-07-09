@@ -1,0 +1,1429 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Company Information</title>
+    <!-- Tailwind CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Include Bootstrap JavaScript -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/js-cookie/3.0.1/js.cookie.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+
+    <script src="assets/script.js"></script>
+    <link rel="stylesheet" href="assets/style.css">
+
+    <style>
+        hr{
+            margin: 0 !important;
+        }
+        .loader {
+            border: 4px solid #f3f3f3;
+            border-radius: 50%;
+            border-top: 4px solid #3b82f6;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .company-card {
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .company-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        }
+    </style>
+</head>
+<body class="bg-gray-100 font-sans">
+    <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-md mb-4">
+        <div class="container">
+            <a class="navbar-brand font-bold text-xl" href="#">Infitra Admin</a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav"
+                aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ml-auto">
+                    <li class="nav-item">
+                        <a class="nav-link text-lg hover:text-blue-600" href="company.html">Company
+                            Information</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link text-lg hover:text-blue-600" href="system-control.html">System Control</a>
+                    </li>
+                    <!-- <li class="nav-item">
+                        <a class="nav-link text-lg hover:text-blue-600" href="subscription-creator.html">Subscription
+                            Control</a>
+                    </li> -->
+                    <li class="nav-item">
+                        <a class="nav-link text-lg hover:text-blue-600" href="system-maintenance.html">System
+                            Maintenance</a>
+                    </li>
+                    <button class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg transition duration-200 ease-in-out cursor-pointer" onclick="logout()">Logout</a>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mx-auto p-6">
+        <div class="flex justify-between items-center mb-6">
+            <h1 class="text-3xl font-bold text-gray-800">Company Management</h1>
+            <button id="newCompanyBtn" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition">
+                New Company
+            </button>
+        </div>
+
+        <!-- Company List -->
+        <div id="companyList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
+            <div id="companyListLoader" class="loader mx-auto hidden"></div>
+        </div>
+
+        <!-- Company Form -->
+        <div id="companyFormContainer" class="bg-white p-6 rounded-3xl shadow-lg hidden">
+            <h2 id="formTitle" class="text-2xl font-semibold mb-4 text-gray-800">New Company</h2>
+            <div id="formLoader" class="loader mx-auto hidden"></div>
+
+
+            <div class="step-indicator">
+                <div class="step-circle active" data-step="0">1</div>
+                <div class="step-line active"></div>
+                <div class="step-circle" data-step="1">2</div>
+                <div class="step-line"></div>
+                <div class="step-circle" data-step="2">3</div>
+                <div class="step-line"></div>
+                <div class="step-circle" data-step="3">4</div>
+            </div>
+
+            <form id="companyForm">
+            <!-- Step 1 -->
+                <div id="step1" class="step">
+                    <h3 class="text-lg font-semibold mb-3">Step 1: Company Details</h3>
+
+                    <div id="companyDetails" class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div class="form-group">
+                            <label for="accountId" class="block text-sm font-medium text-gray-700">Account ID</label>
+                            <input type="text" id="accountId" name="accountId" class="mt-1 w-full p-2 border rounded-lg">
+                            <div class="invalid-feedback text-red-500 text-xs mt-1" style="display:none;"></div>
+                        </div>
+                        <div class="form-group">
+                            <label for="name" class="block text-sm font-medium text-gray-700">Name</label>
+                            <input type="text" id="name" name="name" class="mt-1 w-full p-2 border rounded-lg">
+                            <div class="invalid-feedback text-red-500 text-xs mt-1" style="display:none;"></div>
+                        </div>
+                        <div class="form-group">
+                            <label for="legalName" class="block text-sm font-medium text-gray-700">Legal Name</label>
+                            <input type="text" id="legalName" name="legalName" class="mt-1 w-full p-2 border rounded-lg">
+                            <div class="invalid-feedback text-red-500 text-xs mt-1" style="display:none;"></div>
+                        </div>
+                        <div class="form-group">
+                            <label for="logo" class="block text-sm font-medium text-gray-700">Logo URL</label>
+                            <input type="text" id="logo" name="logo" class="mt-1 w-full p-2 border rounded-lg">
+                            <div class="invalid-feedback text-red-500 text-xs mt-1" style="display:none;"></div>
+                        </div>
+                        <div class="form-group">
+                            <label for="website" class="block text-sm font-medium text-gray-700">Website</label>
+                            <input type="text" id="website" name="website" class="mt-1 w-full p-2 border rounded-lg">
+                            <div class="invalid-feedback text-red-500 text-xs mt-1" style="display:none;"></div>
+                        </div>
+                        <div class="form-group">
+                            <label for="locale" class="block text-sm font-medium text-gray-700">Locale</label>
+                            <select id="locale" name="locale" class="mt-1 w-full p-2 border rounded-lg">
+                                <option value="en">English</option>
+                                <option value="ar">Arabic</option>
+                            </select>
+                        </div>
+                        <h4 class="text-lg font-semibold mb-1 mt-4 col-span-3">Address Information</h4>
+                        <hr class="col-span-3">
+                        <div class="form-group">
+                            <label for="addressLine1" class="block text-sm font-medium text-gray-700">Address Line 1</label>
+                            <input type="text" id="addressLine1" name="addressLine1" class="mt-1 w-full p-2 border rounded-lg">
+                            <div class="invalid-feedback text-red-500 text-xs mt-1" style="display:none;"></div>
+                        </div>
+                        <div class="form-group">
+                            <label for="addressLine2" class="block text-sm font-medium text-gray-700">Address Line 2</label>
+                            <input type="text" id="addressLine2" name="addressLine2" class="mt-1 w-full p-2 border rounded-lg">
+                            <div class="invalid-feedback text-red-500 text-xs mt-1" style="display:none;"></div>
+                        </div>
+                        <div class="form-group">
+                            <label for="city" class="block text-sm font-medium text-gray-700">City</label>
+                            <input type="text" id="city" name="city" class="mt-1 w-full p-2 border rounded-lg">
+                            <div class="invalid-feedback text-red-500 text-xs mt-1" style="display:none;"></div>
+                        </div>
+                        <div class="form-group">
+                            <label for="state" class="block text-sm font-medium text-gray-700">State</label>
+                            <input type="text" id="state" name="state" class="mt-1 w-full p-2 border rounded-lg">
+                            <div class="invalid-feedback text-red-500 text-xs mt-1" style="display:none;"></div>
+                        </div>
+                        <div class="form-group">
+                            <label for="zip" class="block text-sm font-medium text-gray-700">ZIP</label>
+                            <input type="text" id="zip" name="zip" class="mt-1 w-full p-2 border rounded-lg">
+                            <div class="invalid-feedback text-red-500 text-xs mt-1" style="display:none;"></div>
+                        </div>
+                        <div class="form-group">
+                            <label for="vat" class="block text-sm font-medium text-gray-700">VAT Registration No</label>
+                            <input type="text" id="vat" name="vat" class="mt-1 w-full p-2 border rounded-lg">
+                            <div class="invalid-feedback text-red-500 text-xs mt-1" style="display:none;"></div>
+                        </div>
+                        <div class="form-group">
+                            <label for="country" class="block text-sm font-medium text-gray-700">Country</label>
+                            <select id="country" name="country" class="mt-1 w-full p-2 border rounded-lg">
+                                <option value="">Select a country</option>
+                            </select>
+                            <div class="invalid-feedback text-red-500 text-xs mt-1" style="display:none;"></div>
+                        </div>
+                        <div class="form-group">
+                            <label for="currency" class="block text-sm font-medium text-gray-700">Currency</label>
+                            <select id="currency" name="currency" class="mt-1 w-full p-2 border rounded-lg" disabled>
+                                <option value="">Select a currency</option>
+                            </select>
+                            <div class="invalid-feedback text-red-500 text-xs mt-1" style="display:none;"></div>
+                        </div>
+                        <div class="form-group">
+                            <label for="timezone" class="block text-sm font-medium text-gray-700">Timezone</label>
+                            <select id="timezone" name="timezone" class="mt-1 w-full p-2 border rounded-lg">
+                                <option value="">Select a timezone</option>
+                            </select>
+                            <div class="invalid-feedback text-red-500 text-xs mt-1" style="display:none;"></div>
+                        </div>
+                        <div class="form-group">
+                            <label for="phone" class="block text-sm font-medium text-gray-700">Phone</label>
+                            <input type="tel" id="phone" name="phone" pattern="[0-9]{3}-[0-9]{3}-[0-9]{4}" class="mt-1 w-full p-2 border rounded-lg" placeholder="123-456-7890">
+                            <div class="invalid-feedback text-red-500 text-xs mt-1" style="display:none;"></div>
+                        </div>
+                        <div class="form-group">
+                            <label for="fax" class="block text-sm font-medium text-gray-700">Fax</label>
+                            <input type="tel" id="fax" name="fax" pattern="[0-9]{3}-[0-9]{3}-[0-9]{4}" class="mt-1 w-full p-2 border rounded-lg" placeholder="123-456-7890">
+                            <div class="invalid-feedback text-red-500 text-xs mt-1" style="display:none;"></div>
+                        </div>
+                        <h4 class="col-span-3 text-lg font-semibold mb-1 mt-4">Additional Information</h4>
+                        <hr class="col-span-3">
+                        <div class="form-group">
+                            <label for="mapboxAPI" class="block text-sm font-medium text-gray-700">Mapbox API</label>
+                            <input type="text" id="mapboxAPI" name="mapboxAPI" class="mt-1 w-full p-2 border rounded-lg">
+                            <div class="invalid-feedback text-red-500 text-xs mt-1" style="display:none;"></div>
+                        </div>
+                        <!-- Account Manager fields removed from here -->
+                    </div>
+                </div>
+
+                <!-- Step 2 -->
+                <div id="step2" class="step step-hidden">
+                    <h3 class="text-lg font-semibold mb-3">Step 2: Subscription Details</h3>
+
+                    <div id="subscriptionDetails" class="row">
+                        <div class="form-group col-12 col-md-6 col-lg-4 col-xl-3 mb-3">
+                            <label for="subscribedDate">Subscribed Date</label>
+                            <input type="date" id="subscribedDate" name="subscribedDate" class="form-control">
+                            <div class="invalid-feedback text-red-500 text-xs mt-1" style="display:none;"></div>
+                        </div>
+                        <div class="form-group col-12 col-md-6 col-lg-4 col-xl-3 mb-3">
+                            <label for="period">Period</label>
+                            <select id="period" name="period" class="form-control" onchange="updateEndDate()">
+                                <option value="365">1 Year</option>
+                                <option value="180">6 Months</option>
+                                <option value="30">1 Month</option>
+                            </select>
+                            <div class="invalid-feedback text-red-500 text-xs mt-1" style="display:none;"></div>
+                        </div>
+                        <div class="form-group col-12 col-md-6 col-lg-4 col-xl-3 mb-3">
+                            <label for="startDate">Start Date</label>
+                            <input type="date" id="startDate" name="startDate" class="form-control" onchange="updateEndDate()">
+                            <div class="invalid-feedback text-red-500 text-xs mt-1" style="display:none;"></div>
+                        </div>
+                        <div class="form-group col-12 col-md-6 col-lg-4 col-xl-3 mb-3">
+                            <label for="endDate">End Date</label>
+                            <input type="date" id="endDate" name="endDate" class="form-control" disabled>
+                            <div class="invalid-feedback text-red-500 text-xs mt-1" style="display:none;"></div>
+                        </div>
+                        <div class="form-group col-12 col-md-6 col-lg-4 col-xl-3 mb-3">
+                            <label for="renewalDate">Renewal Date</label>
+                            <input type="date" id="renewalDate" name="renewalDate" class="form-control" disabled>
+                            <div class="invalid-feedback text-red-500 text-xs mt-1" style="display:none;"></div>
+                        </div>
+                        <div class="form-group col-12 col-md-6 col-lg-4 col-xl-3 mb-3">
+                            <label for="licensedUsers">License Users</label>
+                            <input type="number" id="licensedUsers" name="licensedUsers" class="form-control">
+                            <div class="invalid-feedback text-red-500 text-xs mt-1" style="display:none;"></div>
+                        </div>
+                        <div class="form-group col-12 col-md-6 col-lg-4 col-xl-3 mb-3">
+                            <label for="payrollEmployees">Payroll Employees</label>
+                            <input type="number" id="payrollEmployees" name="payrollEmployees" class="form-control">
+                            <div class="invalid-feedback text-red-500 text-xs mt-1" style="display:none;"></div>
+                        </div>
+                        <div class="form-group col-12 col-md-6 col-lg-4 col-xl-3 mb-3">
+                            <label for="totalEmployees">Total Employees</label>
+                            <input type="number" id="totalEmployees" name="totalEmployees" class="form-control">
+                            <div class="invalid-feedback text-red-500 text-xs mt-1" style="display:none;"></div>
+                        </div>
+                        <div class="form-group col-12 col-md-6 col-lg-4 col-xl-3 mb-3">
+                            <label for="essUsers">ESS Employees</label>
+                            <input type="number" id="essUsers" name="essUsers" class="form-control">
+                            <div class="invalid-feedback text-red-500 text-xs mt-1" style="display:none;"></div>
+                        </div>
+                        <div class="form-group col-12 col-md-6 col-lg-4 col-xl-3 mb-3">
+                            <label for="storage">Storage Capacity (GB)</label>
+                            <input type="number" id="storage" name="storage" class="form-control">
+                            <div class="invalid-feedback text-red-500 text-xs mt-1" style="display:none;"></div>
+                        </div>
+                        <div class="form-group col-12 col-md-6 col-lg-4 col-xl-3 mb-3">
+                            <label for="subsidiary">Total Subsidiaries</label>
+                            <input type="number" id="subsidiary" name="subsidiary" class="form-control">
+                            <div class="invalid-feedback text-red-500 text-xs mt-1" style="display:none;"></div>
+                        </div>
+                        <div class="form-group col-12 col-md-6 col-lg-4 col-xl-3 mb-3">
+                            <label for="workCalendar">Total Work Calenders</label>
+                            <input type="number" id="workCalendar" name="workCalendar" class="form-control">
+                            <div class="invalid-feedback text-red-500 text-xs mt-1" style="display:none;"></div>
+                        </div>
+                        <div class="form-group col-12 col-md-6 col-lg-4 col-xl-3 mb-3">
+                            <div class="form-check mt-4 pt-2">
+                                <input type="checkbox" id="offlineApp" name="offlineApp" class="form-check-input">
+                                <label for="offlineApp" class="form-check-label">Offline App</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step 3 -->
+                <div id="step3" class="step step-hidden">
+                    <h3 class="text-lg font-semibold mb-3">Step 3: Module Selection</h3>
+
+                    <div id="modulesDetails" class="row">
+                        <div class="form-group col-12 col-md-6 col-lg-4 col-xl-3 mb-3">
+                            <label for="plan">Plan</label>
+                            <select id="plan" name="plan" class="form-control" onchange="updatePlanModules()">
+                                <option value="Starter">Starter</option>
+                                <option value="Essential">Essential</option>
+                                <option value="Premium">Premium</option>
+                                <option value="Enterprise">Enterprise</option>
+                            </select>
+                        </div>
+                        <!-- Modules -->
+                        <div id="resources" class="mt-4">
+                            <!-- Resources will be dynamically inserted here -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step 4 -->
+                <div id="step4" class="step step-hidden">
+                    <h3 class="text-lg font-semibold mb-3">Step 4: Account Manager(s)</h3>
+                    <div id="accountManagersContainer">
+                        <!-- Account manager forms will be inserted here -->
+                    </div>
+                    <button type="button" id="addAccountManagerBtn" class="btn btn-success mt-3">
+                        <i class="fas fa-plus"></i> Add More
+                    </button>
+                </div>
+
+                <!-- Navigation Buttons -->
+                <div class="d-flex justify-content-between mt-4">
+                    <button type="button" id="prevButton" class="btn btn-secondary">Previous</button>
+                    <button type="button" id="nextButton" class="btn btn-primary">Next</button>
+                    <button type="submit" id="submitButton" class="btn btn-primary step-hidden">Submit</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</body>
+
+<script>
+    const observer = new MutationObserver((mutations) => {
+        mutations.forEach((mutation) => {
+            if (mutation.target.classList && !mutation.target.classList.contains('hidden')) {
+                const script = document.createElement('script');
+                script.src = 'assets/stepwizard.js';
+                document.body.appendChild(script);
+                observer.disconnect();
+            }
+        });
+    });
+
+    observer.observe(document.getElementById('companyFormContainer'), {
+        attributes: true,
+        attributeFilter: ['class']
+    });
+</script>
+<script>
+    const companyList = document.getElementById('companyList');
+    const companyListLoader = document.getElementById('companyListLoader');
+    const companyFormContainer = document.getElementById('companyFormContainer');
+    const companyForm = document.getElementById('companyForm');
+    const formLoader = document.getElementById('formLoader');
+    const newCompanyBtn = document.getElementById('newCompanyBtn');
+    const prevBtn = document.getElementById('prevButton');
+    const submitBtn = document.getElementById('submitButton');
+    const formTitle = document.getElementById('formTitle');
+
+    let isEditing = false;
+    let currentAccountId = null;
+    let countries;
+
+    // Fetch timezones
+    async function fetchCountryAndTimezones() {
+        try {
+            const response = await fetch(`${apiURL}/resources/file/countries.json`, {
+                headers: {
+                    'Authorization': `Bearer ${cognitoToken}`,
+                    'x-origin-ip': originIP,
+                    'x-otp': otp,
+                    "x-compression": false,
+                    'Content-Type': 'application/json'
+                }
+            });
+            countries = await response.json();
+            const timezoneSelect = document.getElementById('timezone');
+            const countrySelect = document.getElementById('country');
+
+            countries.forEach(country => {
+                const countryOption = document.createElement('option');
+                countryOption.value = country.name;
+                countryOption.textContent = `${country.name}`;
+                countrySelect.appendChild(countryOption);
+
+                if (country.timezones.length > 1) {
+                    const optgroup = document.createElement('optgroup');
+                    optgroup.label = country.name;
+                    country.timezones.forEach(timezone => {
+                        const option = document.createElement('option');
+                        option.value = timezone.zoneName;
+                        option.textContent = `${timezone.zoneName} - ${timezone.gmtOffsetName}`;
+                        optgroup.appendChild(option);
+                    });
+                    timezoneSelect.appendChild(optgroup);
+                } else {
+                    country.timezones.forEach(timezone => {
+                        const option = document.createElement('option');
+                        option.value = timezone.zoneName;
+                        option.textContent = `${country.name}: ${timezone.zoneName} - ${timezone.gmtOffsetName}`;
+                        timezoneSelect.appendChild(option);
+                    });
+                }
+            });
+        } catch (error) {
+            console.error('Error fetching timezones:', error);
+        }
+    }
+
+    // Fetch companies
+    async function fetchCompanies() {
+        showListLoader(true);
+        try {
+            const response = await fetch(`${apiURL}/system/client/accounts`, {
+                headers: {
+                    'Authorization': `Bearer ${cognitoToken}`,
+                    'x-origin-ip': originIP,
+                    'x-otp': otp,
+"x-compression": false,
+                    'Content-Type': 'application/json'
+                }
+            });
+            const companies = await response.json();
+            renderCompanies(companies.data || []);
+        } catch (error) {
+            console.error('Error fetching companies:', error);
+            companyList.innerHTML = '<p class="text-red-500">Failed to load companies.</p>';
+        } finally {
+            showListLoader(false);
+        }
+    }
+
+    // Render company list
+    function renderCompanies(companies) {
+        companyList.innerHTML = '';
+        companies.forEach(company => {
+            const card = document.createElement('div');
+            card.className = 'company-card bg-white p-4 rounded-lg shadow-md flex items-center space-x-4 rounded-3xl';
+            card.innerHTML = `
+                <img src="${company.logo || 'https://via.placeholder.com/50'}" alt="${company.name}" class="w-20 object-contain">
+                <div class="flex-1">
+                    <h3 class="text-lg font-semibold text-gray-800">${company.name}</h3>
+                    <p class="text-sm text-gray-500">Account ID: ${company.accountId}</p>
+                </div>
+                <button class="edit-btn bg-yellow-500 text-white px-3 py-1 rounded-lg hover:bg-yellow-600 transition" data-account-id="${company.accountId}">
+                    Edit
+                </button>
+            `;
+            companyList.appendChild(card);
+        });
+
+        // Add edit button listeners
+        document.querySelectorAll('.edit-btn').forEach(btn => {
+            btn.addEventListener('click', () => editCompany(btn.dataset.accountId));
+        });
+    }
+
+    // Show/hide list loader
+    function showListLoader(isLoading) {
+        companyListLoader.classList.toggle('hidden', !isLoading);
+        companyList.classList.toggle('opacity-50', isLoading);
+    }
+
+    // Show/hide form loader
+    function showFormLoader(isLoading) {
+        formLoader.classList.toggle('hidden', !isLoading);
+        companyForm.classList.toggle('opacity-50', isLoading);
+        submitBtn.disabled = isLoading;
+    }
+
+    // Reset form
+    function resetForm() {
+        companyForm.reset();
+        document.getElementById('accountId').value = '';
+        formTitle.textContent = 'New Company';
+        submitBtn.textContent = 'Create';
+        prevBtn.textContent = 'Cancel';
+        isEditing = false;
+        currentAccountId = null;
+        resetAccountManagers();
+    }
+
+    // Open new company form
+    newCompanyBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        resetForm();
+        companyFormContainer.classList.remove('hidden');
+        companyList.classList.add('hidden');
+        loadConfigurationList(() => {
+            updatePlanModules('Starter')
+            subscriptionFetched = true;
+            createCheckboxes(configurationData, document.getElementById('resources'));
+        });
+    });
+
+    // Edit company
+    async function editCompany(accountId) {
+        showFormLoader(true);
+        companyFormContainer.classList.remove('hidden');
+        companyList.classList.add('hidden');
+        formTitle.textContent = 'Edit Company';
+        submitBtn.textContent = 'Update';
+        isEditing = true;
+        currentAccountId = accountId;
+
+        try {
+            const response = await fetch(`${apiURL}/info/company`, {
+            // const response = await fetch(`${apiURL}/company/info`, {
+                headers: {
+                    'Content-Type': 'application/json',
+                    'client': accountId,
+                    'Authorization': `Bearer ${cognitoToken}`,
+                    'x-origin-ip': originIP,
+                    'x-otp': otp
+                }
+            });
+            if (!response.ok) throw new Error('Could not fetch company info');
+            const data = await response.json();
+            getSubscriptionData(accountId)
+            preFillForm(data.data);
+        } catch (error) {
+            console.error('Error fetching company info:', error);
+            alert('Failed to load company information.');
+        } finally {
+            showFormLoader(false);
+        }
+    }
+
+    // Pre-fill form
+    function preFillForm(data) {
+        document.getElementById('name').value = data?.name || '';
+        document.getElementById('legalName').value = data?.legalName || '';
+        document.getElementById('website').value = data?.url || '';
+        document.getElementById('logo').value = data?.logo || '';
+        document.getElementById('locale').value = data?.locale || 'en';
+        document.getElementById('accountId').value = data?.accountId || '';
+        document.getElementById('addressLine1').value = data?.billingAddress?.addressLine1 || '';
+        document.getElementById('addressLine2').value = data?.billingAddress?.addressLine2 || '';
+        document.getElementById('state').value = data?.billingAddress?.state || '';
+        document.getElementById('city').value = data?.billingAddress?.city || '';
+        document.getElementById('zip').value =  data?.billingAddress?.zip || '';
+        document.getElementById('vat').value =  data?.billingAddress?.vat || '';
+        document.getElementById('country').value = data?.billingAddress?.country || '';
+        document.getElementById('currency').value = data?.billingAddress?.currency || '';
+        document.getElementById('timezone').value = data?.billingAddress?.timezone || '';
+        document.getElementById('phone').value = data?.billingAddress?.phone || '';
+        document.getElementById('fax').value = data?.billingAddress?.fax || '';
+        document.getElementById('mapboxAPI').value = data?.mapboxAPI || '';
+        // Account managers
+        const container = document.getElementById('accountManagersContainer');
+        container.innerHTML = '';
+        if (Array.isArray(data?.accountManagers) && data.accountManagers.length > 0) {
+            data.accountManagers.forEach(am => addAccountManagerForm(am));
+        } else if (data?.accountManager) {
+            // If only a single accountManager object exists, treat as array of one
+            addAccountManagerForm(data.accountManager);
+        } else {
+            addAccountManagerForm(); // Add empty form if none
+        }
+    }
+
+    // Account Manager dynamic logic
+    function createAccountManagerForm(data = {}) {
+        const wrapper = document.createElement('div');
+        wrapper.className = 'account-manager-form bg-gray-50 p-4 rounded-xl mb-4 relative';
+        wrapper.innerHTML = `
+            <button type="button" class="remove-account-manager absolute top-2 right-2 text-red-500 hover:text-red-700" title="Remove"><i class="fas fa-trash"></i></button>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="form-group">
+                    <label class="block text-sm font-medium text-gray-700">First Name</label>
+                    <input type="text" class="accountManagerFirstName mt-1 w-full p-2 border rounded-lg" name="accountManagerFirstName" value="${data.firstName || ''}">
+                    <div class="invalid-feedback text-red-500 text-xs mt-1" style="display:none;"></div>
+                </div>
+                <div class="form-group">
+                    <label class="block text-sm font-medium text-gray-700">Last Name</label>
+                    <input type="text" class="accountManagerLastName mt-1 w-full p-2 border rounded-lg" name="accountManagerLastName" value="${data.lastName || ''}">
+                    <div class="invalid-feedback text-red-500 text-xs mt-1" style="display:none;"></div>
+                </div>
+                <div class="form-group">
+                    <label class="block text-sm font-medium text-gray-700">Email</label>
+                    <input type="email" class="accountManagerEmail mt-1 w-full p-2 border rounded-lg" name="accountManagerEmail" value="${data.email || ''}">
+                    <div class="invalid-feedback text-red-500 text-xs mt-1" style="display:none;"></div>
+                </div>
+                <div class="form-group">
+                    <label class="block text-sm font-medium text-gray-700">Phone</label>
+                    <input type="tel" class="accountManagerPhone mt-1 w-full p-2 border rounded-lg" name="accountManagerPhone" value="${data.phone || ''}" placeholder="123-456-7890">
+                    <div class="invalid-feedback text-red-500 text-xs mt-1" style="display:none;"></div>
+                </div>
+            </div>
+        `;
+        wrapper.querySelector('.remove-account-manager').onclick = function() {
+            wrapper.remove();
+        };
+        return wrapper;
+    }
+
+    function addAccountManagerForm(data) {
+        document.getElementById('accountManagersContainer').appendChild(createAccountManagerForm(data));
+    }
+
+    document.getElementById('addAccountManagerBtn').onclick = function() {
+        addAccountManagerForm();
+    };
+
+    // Ensure at least one account manager form on page load
+    window.addEventListener('DOMContentLoaded', function() {
+        if (document.getElementById('accountManagersContainer')) {
+            resetAccountManagers();
+        }
+    });
+
+    // On form reset, ensure at least one account manager form
+    function resetAccountManagers() {
+        const container = document.getElementById('accountManagersContainer');
+        container.innerHTML = '';
+        addAccountManagerForm(); // Always add one by default
+    }
+
+    // Update resetForm to also reset account managers
+    function resetForm() {
+        companyForm.reset();
+        document.getElementById('accountId').value = '';
+        formTitle.textContent = 'New Company';
+        submitBtn.textContent = 'Create';
+        prevBtn.textContent = 'Cancel';
+        isEditing = false;
+        currentAccountId = null;
+        resetAccountManagers();
+    }
+
+    // Update preFillForm to fill account managers
+    function preFillForm(data) {
+        document.getElementById('name').value = data?.name || '';
+        document.getElementById('legalName').value = data?.legalName || '';
+        document.getElementById('website').value = data?.url || '';
+        document.getElementById('logo').value = data?.logo || '';
+        document.getElementById('locale').value = data?.locale || 'en';
+        document.getElementById('accountId').value = data?.accountId || '';
+        document.getElementById('addressLine1').value = data?.billingAddress?.addressLine1 || '';
+        document.getElementById('addressLine2').value = data?.billingAddress?.addressLine2 || '';
+        document.getElementById('state').value = data?.billingAddress?.state || '';
+        document.getElementById('city').value = data?.billingAddress?.city || '';
+        document.getElementById('zip').value =  data?.billingAddress?.zip || '';
+        document.getElementById('vat').value =  data?.billingAddress?.vat || '';
+        document.getElementById('country').value = data?.billingAddress?.country || '';
+        document.getElementById('currency').value = data?.billingAddress?.currency || '';
+        document.getElementById('timezone').value = data?.billingAddress?.timezone || '';
+        document.getElementById('phone').value = data?.billingAddress?.phone || '';
+        document.getElementById('fax').value = data?.billingAddress?.fax || '';
+        // Account managers
+        const container = document.getElementById('accountManagersContainer');
+        container.innerHTML = '';
+        if (Array.isArray(data?.accountManager) && data.accountManager.length > 0) {
+            data.accountManager.forEach(am => addAccountManagerForm(am));
+        } else if (data?.accountManager) {
+            // If only a single accountManager object exists, treat as array of one
+            addAccountManagerForm(data.accountManager);
+        } else {
+            addAccountManagerForm(); // Add empty form if none
+        }
+    }
+
+    // Submit form
+    companyForm.addEventListener('submit', async (event) => {
+        event.preventDefault();
+
+        // Collect all account managers
+        const accountManagers = Array.from(document.querySelectorAll('.account-manager-form')).map(form => ({
+            firstName: form.querySelector('.accountManagerFirstName').value,
+            lastName: form.querySelector('.accountManagerLastName').value,
+            fullName: form.querySelector('.accountManagerFirstName').value + ' ' + form.querySelector('.accountManagerLastName').value,
+            phone: form.querySelector('.accountManagerPhone').value,
+            email: form.querySelector('.accountManagerEmail').value
+        }));
+        const formData = {
+            name: document.getElementById('name').value,
+            legalName: document.getElementById('legalName').value,
+            url: document.getElementById('website').value,
+            logo: document.getElementById('logo').value,
+            locale: document.getElementById('locale').value,
+            accountId: document.getElementById('accountId').value,
+            timezone: document.getElementById('timezone').value,
+            vat: document.getElementById('vat').value,
+            billingAddress: {
+                addressLine1: document.getElementById('addressLine1').value,
+                addressLine2: document.getElementById('addressLine2').value,
+                city: document.getElementById('city').value,
+                state: document.getElementById('state').value,
+                zip: document.getElementById('zip').value,
+                vat: document.getElementById('vat').value,
+                country: document.getElementById('country').value,
+                currency: document.getElementById('currency').value,
+                timezone: document.getElementById('timezone').value,
+                phone: document.getElementById('phone').value,
+                fax: document.getElementById('fax').value
+            },
+            accountManager: accountManagers,
+            mapboxAPI: document.getElementById('mapboxAPI').value || null,
+            subscription: {
+                plan: document.getElementById('plan').value,
+                subscribedDate: document.getElementById('subscribedDate').value,
+                renewalDate: document.getElementById('renewalDate').value,
+                startDate: document.getElementById('startDate').value,
+                endDate: document.getElementById('endDate').value,
+                period: document.getElementById('period').value,
+                licensedUsers:  document.getElementById('licensedUsers').value,
+                totalEmployees: document.getElementById('totalEmployees').value,
+                payrollEmployees: document.getElementById('payrollEmployees').value,
+                essUsers: document.getElementById('essUsers').value,
+                storage: document.getElementById('storage').value,
+                subsidiary: document.getElementById('subsidiary').value,
+                workCalendar: document.getElementById('workCalendar').value,
+                modules: Object.assign(checkedStates, { 'OFFLINEAPP': document.getElementById('offlineApp').checked }),
+                paymentGateway: '0'
+            }
+        };
+
+        console.log(formData)
+        try {
+            showFormLoader(true);
+            const response =
+            !isEditing ? await fetch(`${apiURL}/system/client`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${cognitoToken}`,
+                    'x-origin-ip': originIP,
+                    'x-otp': otp
+                },
+                body: JSON.stringify(formData)
+            }) :
+            await fetch(`${apiURL}/system/client`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${cognitoToken}`,
+                    'x-origin-ip': originIP,
+                    'x-otp': otp
+                },
+                body: JSON.stringify(formData)
+            });
+
+            if (!response.ok) {
+                const res = await response.json();
+                alert(res?.message || 'Operation failed.');
+                throw new Error('Network response was not ok');
+            }
+
+            alert(`Company ${isEditing ? 'updated' : 'created'} successfully.`);
+            companyFormContainer.classList.add('hidden');
+            companyList.classList.remove('hidden');
+            fetchCompanies();
+        } catch (error) {
+            console.error('Error submitting form:', error);
+            alert(`Failed to ${isEditing ? 'update' : 'create'} company.`);
+        } finally {
+            showFormLoader(false);
+        }
+    });
+
+    // Add validation error display for account manager fields
+    function createAccountManagerForm(data = {}) {
+        const wrapper = document.createElement('div');
+        wrapper.className = 'account-manager-form bg-gray-50 p-4 rounded-xl mb-4 relative';
+        wrapper.innerHTML = `
+            <button type="button" class="remove-account-manager absolute top-2 right-2 text-red-500 hover:text-red-700" title="Remove"><i class="fas fa-trash"></i></button>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="form-group">
+                    <label class="block text-sm font-medium text-gray-700">First Name</label>
+                    <input type="text" class="accountManagerFirstName mt-1 w-full p-2 border rounded-lg" name="accountManagerFirstName" value="${data.firstName || ''}">
+                    <div class="invalid-feedback text-red-500 text-xs mt-1" style="display:none;"></div>
+                </div>
+                <div class="form-group">
+                    <label class="block text-sm font-medium text-gray-700">Last Name</label>
+                    <input type="text" class="accountManagerLastName mt-1 w-full p-2 border rounded-lg" name="accountManagerLastName" value="${data.lastName || ''}">
+                    <div class="invalid-feedback text-red-500 text-xs mt-1" style="display:none;"></div>
+                </div>
+                <div class="form-group">
+                    <label class="block text-sm font-medium text-gray-700">Email</label>
+                    <input type="email" class="accountManagerEmail mt-1 w-full p-2 border rounded-lg" name="accountManagerEmail" value="${data.email || ''}">
+                    <div class="invalid-feedback text-red-500 text-xs mt-1" style="display:none;"></div>
+                </div>
+                <div class="form-group">
+                    <label class="block text-sm font-medium text-gray-700">Phone</label>
+                    <input type="tel" class="accountManagerPhone mt-1 w-full p-2 border rounded-lg" name="accountManagerPhone" value="${data.phone || ''}" placeholder="123-456-7890">
+                    <div class="invalid-feedback text-red-500 text-xs mt-1" style="display:none;"></div>
+                </div>
+            </div>
+        `;
+        wrapper.querySelector('.remove-account-manager').onclick = function() {
+            wrapper.remove();
+        };
+        return wrapper;
+    }
+
+    // Validation for account manager fields
+    function validateAccountManagers() {
+        let valid = true;
+        Array.from(document.querySelectorAll('.account-manager-form')).forEach(form => {
+            // Clear previous errors
+            form.querySelectorAll('.invalid-feedback').forEach(div => {
+                div.style.display = 'none';
+                div.textContent = '';
+            });
+            // Validate fields
+            const firstName = form.querySelector('.accountManagerFirstName');
+            const lastName = form.querySelector('.accountManagerLastName');
+            const email = form.querySelector('.accountManagerEmail');
+            const phone = form.querySelector('.accountManagerPhone');
+            // First Name
+            if (!firstName.value.trim()) {
+                const err = firstName.nextElementSibling;
+                err.textContent = 'First name is required.';
+                err.style.display = 'block';
+                valid = false;
+            }
+            // Last Name
+            if (!lastName.value.trim()) {
+                const err = lastName.nextElementSibling;
+                err.textContent = 'Last name is required.';
+                err.style.display = 'block';
+                valid = false;
+            }
+            // Email
+            if (!email.value.trim()) {
+                const err = email.nextElementSibling;
+                err.textContent = 'Email is required.';
+                err.style.display = 'block';
+                valid = false;
+            } else if (!/^\S+@\S+\.\S+$/.test(email.value.trim())) {
+                const err = email.nextElementSibling;
+                err.textContent = 'Invalid email format.';
+                err.style.display = 'block';
+                valid = false;
+            }
+            // Phone (optional, but if present, must be valid)
+            if (phone.value.trim() && !/^\d{3}-\d{3}-\d{4}$/.test(phone.value.trim())) {
+                const err = phone.nextElementSibling;
+                err.textContent = 'Phone must be in 123-456-7890 format.';
+                err.style.display = 'block';
+                valid = false;
+            }
+        });
+        return valid;
+    }
+
+    // Hook validation into form submit
+    companyForm.addEventListener('submit', async (event) => {
+        // ...existing code...
+        let valid = validateFormFields();
+        if (!valid || !validateAccountManagers()) {
+            return;
+        }
+        // ...existing code...
+    });
+
+    // Validation logic for all fields
+    function validateFormFields() {
+        let valid = true;
+        // Helper to show error
+        function showError(input, message) {
+            const err = input.nextElementSibling;
+            if (err && err.classList.contains('invalid-feedback')) {
+                err.textContent = message;
+                err.style.display = 'block';
+            }
+        }
+        // Helper to clear error
+        function clearError(input) {
+            const err = input.nextElementSibling;
+            if (err && err.classList.contains('invalid-feedback')) {
+                err.textContent = '';
+                err.style.display = 'none';
+            }
+        }
+        // Validate required text fields in Step 1
+        const requiredTextFields = [
+            'accountId','name','legalName','logo','website','addressLine1','city','state','zip','vat','mapboxAPI'
+        ];
+        requiredTextFields.forEach(id => {
+            const input = document.getElementById(id);
+            if (input) {
+                clearError(input);
+                if (!input.value.trim()) {
+                    showError(input, 'This field is required.');
+                    valid = false;
+                }
+            }
+        });
+        // Validate selects in Step 1
+        const requiredSelects = ['locale','country','currency','timezone'];
+        requiredSelects.forEach(id => {
+            const select = document.getElementById(id);
+            if (select) {
+                clearError(select);
+                if (!select.value) {
+                    showError(select, 'Please select a value.');
+                    valid = false;
+                }
+            }
+        });
+        // Validate phone and fax
+        const phone = document.getElementById('phone');
+        clearError(phone);
+        if (phone.value.trim() && !/^\d{3}-\d{3}-\d{4}$/.test(phone.value.trim())) {
+            showError(phone, 'Phone must be in 123-456-7890 format.');
+            valid = false;
+        }
+        const fax = document.getElementById('fax');
+        clearError(fax);
+        if (fax.value.trim() && !/^\d{3}-\d{3}-\d{4}$/.test(fax.value.trim())) {
+            showError(fax, 'Fax must be in 123-456-7890 format.');
+            valid = false;
+        }
+        // Step 2 required fields
+        const requiredStep2 = ['subscribedDate','period','startDate','endDate','renewalDate','licensedUsers','payrollEmployees','totalEmployees','essUsers','storage','subsidiary','workCalendar'];
+        requiredStep2.forEach(id => {
+            const input = document.getElementById(id);
+            if (input) {
+                clearError(input);
+                if (!input.value) {
+                    showError(input, 'This field is required.');
+                    valid = false;
+                }
+            }
+        });
+        return valid;
+    }
+</script>
+
+<script>
+    function updateEndDate() {
+        const startDateInput = document.getElementById('startDate');
+        const endDateInput = document.getElementById('endDate');
+        const renewalDateInput = document.getElementById('renewalDate');
+        const periodSelect = document.getElementById('period');
+
+        if (startDateInput.value) {
+            const startDate = new Date(startDateInput.value);
+            const days = parseInt(periodSelect.value, 10);
+            const endDate = new Date(startDate);
+            endDate.setDate(startDate.getDate() + days - 1);
+
+            // Format date as YYYY-MM-DD
+            const endDateStr = endDate.toISOString().split('T')[0];
+            endDateInput.value = endDateStr;
+
+            // Renewal date is endDate
+            renewalDateInput.value = endDateStr;
+        }
+    }
+</script>
+
+<script>
+    let configurationData = [];
+    let configurationFetched = false;
+    let subscriptionFetched = false;
+    let checkedStates = {};
+
+    function getSubscriptionData(accountId){
+
+        configurationFetched = false;
+        subscriptionFetched = false;
+
+        const clientFilePath = `${accountId}/configuration/subscription.json`;
+
+        loadConfigurationList(() => {
+            checkFileExists(clientFilePath, accountId);
+        });
+    }
+
+    function loadConfigurationList(callback) {
+        fetch(`${apiURL}/resources/file/configurationList.json`, {
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${cognitoToken}`,
+                'x-compression': 'false',
+                'x-origin-ip': originIP,
+                'x-otp': otp
+            }
+        })
+            .then(response => response.json())
+            .then(data => {
+                configurationData = data;
+                configurationFetched = true;
+                // showResourcesIfReady();
+                callback();
+            })
+            .catch(error => {
+                console.error('Error loading configuration list:', error);
+            });
+    }
+
+    function updatePlanModules(planName) {
+        fetch(`${apiURL}/resources/file/plans.json`, {
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${cognitoToken}`,
+                'x-compression': 'false',
+                'x-origin-ip': originIP,
+                'x-otp': otp
+            }
+        })
+            .then(response => response.json())
+            .then(data => {
+                // Correctly retrieve the selected plan name
+                const planName = document.getElementById('plan').value || planName ;
+                console.log("🚀 ~ updatePlanModules ~ planName:", planName)
+
+                // Find the plan matching the selected name
+                const plan = data.find(p => p.name === planName);
+
+                // Update the checked state for the configuration resources
+                configurationData.forEach(resource => {
+                    updateCheckedState(resource, plan?.modules);
+                });
+            })
+            .catch(error => {
+                console.error('Error loading configuration list:', error);
+            });
+    }
+
+    function checkFileExists(filePath, accountNumber) {
+        fetch(`${apiURL}/system/client/subscriptions/${accountNumber}`, {
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${cognitoToken}`,
+                'x-compression': 'false',
+                'x-origin-ip': originIP,
+                'x-otp': otp
+            },
+        })
+            .then(response => {
+                if (response.status === 404) {
+                    // alert('File does not exist. Please select configurations manually.');
+
+                    document.getElementById('plan').value = 'Starter';
+                    document.getElementById('period').value = '365';
+                    document.getElementById('startDate').value = '';
+                    document.getElementById('endDate').value = '';
+                    document.getElementById('subscribedDate').value = '';
+                    document.getElementById('renewalDate').value = '';
+                    document.getElementById('licensedUsers').value = 0;
+                    document.getElementById('payrollEmployees').value = 0;
+                    document.getElementById('totalEmployees').value = 0;
+                    document.getElementById('essUsers').value = 0;
+                    document.getElementById('storage').value = 0;
+                    document.getElementById('offlineApp').checked = false;
+                    document.getElementById('subsidiary').value = 0;
+                    document.getElementById('workCalendar').value = 0;
+
+                    updatePlanModules('Starter')
+                    subscriptionFetched = true;
+                    // showResourcesIfReady();
+                    createCheckboxes(configurationData, document.getElementById('resources'));
+                } else {
+                    return response.json();
+                }
+            })
+            .then(subscriptionData => {
+                if (subscriptionData) {
+                    patchSubscriptionData(subscriptionData);
+                    subscriptionFetched = true;
+                    // showResourcesIfReady();
+                    createCheckboxes(configurationData, document.getElementById('resources'));
+                    console.log(checkedStates);
+                }
+            })
+            .catch(error => {
+                console.error('Error fetching subscription data:', error);
+            });
+    }
+
+    function patchSubscriptionData(subscriptionData) {
+        document.getElementById('plan').value = subscriptionData.plan || 'Starter';
+        document.getElementById('period').value = subscriptionData.period || '365';
+        document.getElementById('startDate').value = subscriptionData.startDate || '';
+        document.getElementById('endDate').value = subscriptionData.endDate || '';
+        document.getElementById('subscribedDate').value = subscriptionData.subscribedDate || '';
+        document.getElementById('renewalDate').value = subscriptionData.renewalDate || '';
+        document.getElementById('licensedUsers').value = subscriptionData.licensedUsers || 0;
+        document.getElementById('payrollEmployees').value = subscriptionData.payrollEmployees || 0;
+        document.getElementById('totalEmployees').value = subscriptionData.totalEmployees || 0;
+        document.getElementById('essUsers').value = subscriptionData.essUsers || 0;
+        document.getElementById('storage').value = subscriptionData.storage || 0;
+        document.getElementById('offlineApp').checked = subscriptionData?.modules?.['OFFLINEAPP'] || false;
+        document.getElementById('subsidiary').value = subscriptionData.subsidiary || 0;
+        document.getElementById('workCalendar').value = subscriptionData.workCalendar || 0;
+
+        configurationData.forEach(resource => {
+            updateCheckedState(resource, subscriptionData?.modules);
+        });
+    }
+
+    function updateCheckedState(resource, subscriptionData) {
+        if (resource.children) {
+            resource.children.forEach(child => {
+
+                if (subscriptionData?.[child.resourceId]) {
+                    child.checked = true;
+                    checkedStates[child.resourceId] = true;
+                } else {
+                    child.checked = false;
+                    checkedStates[child.resourceId] = false;
+                }
+                updateCheckedState(child, subscriptionData);
+            });
+        }
+    }
+
+    // function uploadToAPI(accountNumber, blob) {
+//         fetch(`${apiURL}/system/client/subscriptions/${accountNumber}`, {
+//             method: 'POST',
+//             headers: {
+//                 'Content-Type': 'application/json',
+//                 'Authorization': `Bearer ${cognitoToken}`,
+//                 'x-otp': otp,
+// "x-compression": false,
+//                 'x-origin-ip': originIP
+//             },
+//             body: JSON.stringify({
+//                     plan: document.getElementById('plan').value,
+//                     subscribedDate: document.getElementById('subscribedDate').value,
+//                     renewalDate: document.getElementById('renewalDate').value,
+//                     startDate: document.getElementById('startDate').value,
+//                     endDate: document.getElementById('endDate').value,
+//                     period: document.getElementById('period').value,
+//                     licensedUsers:  document.getElementById('licensedUsers').value,
+//                     totalEmployees: document.getElementById('totalEmployees').value,
+//                     payrollEmployees: document.getElementById('payrollEmployees').value,
+//                     essUsers: document.getElementById('essUsers').value,
+//                     storage: document.getElementById('storage').value,
+//                     subsidiary: document.getElementById('subsidiary').value,
+//                     workCalendar: document.getElementById('workCalendar').value,
+//                     modules: Object.assign(checkedStates, { 'OFFLINEAPP': document.getElementById('offlineApp').checked }),
+//                     paymentGateway: '0'
+//                 })
+//         })
+//             .then(response => {
+//                 if (response.ok) {
+//                     alert('Subscription file uploaded successfully.');
+//                 } else {
+//                     alert('Error uploading subscription file.');
+//                 }
+//             })
+//             .catch(error => {
+//                 console.error('Error uploading subscription file:', error);
+//             });
+    // }
+
+    // function uploadToS3(filePath, blob) {
+        // const params = {
+        //     Bucket: ClientBucketName,
+        //     Key: filePath,
+        //     Body: blob,
+        //     ContentType: "application/json"
+        // };
+
+        // s3.putObject(params, function (err, data) {
+        //     if (err) {
+        //         console.error('Error uploading file:', err);
+        //     } else {
+        //         alert('Subscription file uploaded successfully.');
+        //     }
+        // });
+    // }
+
+    function createCheckboxes(resourceList, container) {
+        container.innerHTML = '';
+
+        const tabsContainer = document.createElement('div');
+        tabsContainer.className = 'flex';
+
+        const tabList = document.createElement('div');
+        tabList.className = 'w-1/4 border-r border-gray-300';
+
+        const tabContent = document.createElement('div');
+        tabContent.className = 'w-3/4 p-4';
+
+        resourceList.forEach((resource, index) => {
+            const tabButton = document.createElement('button');
+            tabButton.className = `block w-full text-left p-3 ${index === 0 ? 'bg-gray-200' : ''} hover:bg-gray-100 transition-all relative`;
+            tabButton.innerHTML = `${resource.name}`;
+
+            const itemCount = document.createElement('span');
+            itemCount.id = `item-count-${resource.resourceId}`;
+            itemCount.className = 'absolute right-4 top-3 bg-gray-200 text-gray-700 px-2 py-1 rounded-full text-sm';
+            itemCount.textContent = countSelectedItems(resource);
+
+            tabButton.appendChild(itemCount);
+
+            tabButton.addEventListener('click', (e) => {
+                e.preventDefault()
+                showTabContent(resource);
+                document.querySelectorAll('.resource-tab').forEach(btn => btn.classList.remove('bg-gray-200'));
+                tabButton.classList.add('bg-gray-200');
+            });
+            tabButton.classList.add('resource-tab');
+            tabList.appendChild(tabButton);
+
+            if (index === 0) showTabContent(resource);
+        });
+
+        tabsContainer.appendChild(tabList);
+        tabsContainer.appendChild(tabContent);
+        container.appendChild(tabsContainer);
+
+        function showTabContent(resource) {
+            tabContent.innerHTML = '';
+
+            const resourceRow = document.createElement('div');
+            resourceRow.className = 'grid grid-cols-2 gap-4';
+
+            createNestedCheckboxes(resource.children, resourceRow);
+
+            tabContent.appendChild(resourceRow);
+        }
+
+        function createNestedCheckboxes(children, container) {
+            children.forEach(child => {
+
+                const childDiv = document.createElement('div');
+                childDiv.className = 'form-check';
+
+                const toggleButton = document.createElement('span');
+                toggleButton.className = 'collapse-toggle ms-2';
+                if (child.children) {
+                    // Default collapsed icon
+                    toggleButton.innerHTML = '<i class="fas fa-chevron-right"></i>';
+                }
+
+                toggleButton.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    const childContainer = childDiv.querySelector('.child-container');
+                    const isExpanded = childContainer.style.display === 'flex';
+                    childContainer.style.display = isExpanded ? 'none' : 'flex';
+                    // Update icon based on the toggle state
+                    if (isExpanded) {
+                        toggleButton.innerHTML = '<i class="fas fa-chevron-right"></i>'; // Collapsed state
+                    } else {
+                        toggleButton.innerHTML = '<i class="fas fa-chevron-down"></i>'; // Expanded state
+                    }
+                });
+
+                const checkbox = document.createElement('input');
+                checkbox.type = 'checkbox';
+                checkbox.id = child.resourceId;
+                checkbox.checked = child.checked || false;
+                checkbox.className = 'form-check-input me-2';
+
+                checkbox.addEventListener('change', function (e) {
+                    e.preventDefault();
+                    child.checked = this.checked;
+                    updateCheckedState(child.resourceId, this.checked);
+                    updateParentCheckedState(child);
+                    updateChildrenCheckedState(child);
+                });
+
+                const label = document.createElement('label');
+                label.htmlFor = child.resourceId;
+                label.className = 'form-check-label';
+                label.innerText = child.name;
+
+                // Action Labels
+                const actionsDiv = document.createElement('div');
+                actionsDiv.className = 'actions-container d-flex gap-2 mt-2';
+
+                child.actions?.forEach(action => {
+
+                    const actionBadge = document.createElement('span');
+                    actionBadge.className = `badge rounded-3 w-fit text-white`;
+                    actionBadge.style.backgroundColor =
+                        action === 'view'
+                            ? '#0077b6'
+                            : action === 'create'
+                            ? '#17c3b2'
+                            : action === 'import'
+                            ? '#7a62f5'
+                            : action === 'edit'
+                            ? '#fcbf49'
+                            : action === 'delete'
+                            ? '#e63946'
+                            : action === 'workflow'
+                            ? '#f283b6'
+                            : '#6c757d'; // Secondary (default grey)
+
+                    actionBadge.innerText = action[0].toUpperCase(); // First letter of action
+                    actionBadge.title = action; // Tooltip for full action name
+                    actionsDiv.appendChild(actionBadge);
+                });
+
+                childDiv.appendChild(checkbox);
+                childDiv.appendChild(label);
+                childDiv.appendChild(toggleButton);
+                childDiv.appendChild(actionsDiv);
+                container.appendChild(childDiv);
+
+                if (child.children) {
+                    const childContainer = document.createElement('div');
+                    childContainer.className = 'child-container ml-4 flex-col gap-2 mt-3';
+                    childContainer.style.display = 'none';
+                    createNestedCheckboxes(child.children, childContainer);
+                    childDiv.appendChild(childContainer);
+
+                    const siblings = child.children;
+                    const allChecked = siblings.every(sibling => sibling.checked);
+                    const someChecked = siblings.some(sibling => sibling.checked);
+
+                    if (checkbox) {
+                        if (allChecked) {
+                            checkbox.checked = true;
+                            checkbox.indeterminate = false;
+                        } else if (someChecked) {
+                            checkbox.checked = false;
+                            checkbox.indeterminate = true;
+                        } else {
+                            checkbox.checked = false;
+                            checkbox.indeterminate = false;
+                        }
+                    }
+                }
+            });
+        }
+
+        function updateParentCheckedState(child) {
+            const parent = findParent(child);
+            if (parent) {
+                const siblings = parent.children;
+                const allChecked = siblings.every(sibling => sibling.checked);
+                const someChecked = siblings.some(sibling => sibling.checked);
+
+                const parentCheckbox = document.getElementById(parent.resourceId);
+                parent.checked = allChecked ? allChecked : someChecked
+                updateCheckedState(parent.resourceId, parent.checked)
+
+                if (parentCheckbox) {
+                    if (allChecked) {
+                        parentCheckbox.checked = true;
+                        parentCheckbox.indeterminate = false;
+                    } else if (someChecked) {
+                        parentCheckbox.checked = false;
+                        parentCheckbox.indeterminate = true;
+                    } else {
+                        parentCheckbox.checked = false;
+                        parentCheckbox.indeterminate = false;
+                    }
+                }
+            }
+        }
+
+        function updateChildrenCheckedState(child) {
+            if (child.children) {
+                child.children.forEach(item => {
+                    item.checked = child.checked
+                    updateCheckedState(item.resourceId, item.checked);
+                    const itemCheckbox = document.getElementById(item.resourceId);
+                    if (itemCheckbox) {
+                        itemCheckbox.checked = item.checked === true;
+                    }
+                })
+            }
+        }
+
+        function findParent(child) {
+            function searchInChildren(resource) {
+                if (resource.children) {
+                    if (resource.children.includes(child)) {
+                        return resource;
+                    }
+                    for (let childResource of resource.children) {
+                        const foundParent = searchInChildren(childResource);
+                        if (foundParent) {
+                            return foundParent;
+                        }
+                    }
+                }
+                return null;
+            }
+
+            for (let resource of resourceList) {
+                const parent = searchInChildren(resource);
+                if (parent) {
+                    return parent;
+                }
+            }
+
+            return null; // Return null if the parent is not found in any resources
+        }
+
+        function updateCheckedState(resourceId, checked) {
+            checkedStates[resourceId] = checked;
+            updateSelectCount()
+        }
+
+        function updateSelectCount() {
+            resourceList.forEach((resource, index) => {
+                countElement = document.getElementById(`item-count-${resource.resourceId}`)
+                if (countElement) {
+                    countElement.textContent = countSelectedItems(resource);
+                }
+            })
+        }
+
+        function countSelectedItems(resource) {
+            let count = 0;
+
+            // Check if the current resource's resourceId is in checkedStates and true
+            if (checkedStates[resource.resourceId] === true) {
+                count++;
+            }
+
+            if (resource.children) {
+                resource.children.forEach(child => {
+                    count += countSelectedItems(child);
+                });
+            }
+
+            return count;
+        }
+    }
+</script>
+</html>

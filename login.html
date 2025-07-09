@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login | infithra Admin</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/js-cookie/3.0.1/js.cookie.min.js"></script>
+    <script src="https://sdk.amazonaws.com/js/aws-sdk-2.1112.0.min.js"></script>
+    <script
+        src="https://cdn.jsdelivr.net/npm/amazon-cognito-identity-js@6.3.15/dist/amazon-cognito-identity.min.js"></script>
+    <link rel="stylesheet" href="assets/style.css">
+    <script src="assets/script.js"></script>
+
+    <style>
+        .login-card {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            padding: 2rem;
+            max-width: 400px;
+            width: 100%;
+        }
+
+        .login-card h3 {
+            font-family: 'Poppins', sans-serif;
+            color: #333;
+            text-align: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .form-control {
+            border-radius: 8px;
+            padding: 0.75rem;
+            border: 1px solid #ddd;
+        }
+
+        .form-control:focus {
+            border-color: #007bff;
+            box-shadow: 0 0 5px rgba(0, 123, 255, 0.3);
+        }
+
+        .btn-primary {
+            background-color: #007bff;
+            border: none;
+            border-radius: 8px;
+            padding: 0.75rem;
+            width: 100%;
+        }
+
+        .btn-primary:hover {
+            background-color: #0056b3;
+            transform: translateY(-2px);
+            transition: all 0.3s ease;
+        }
+
+        .form-text a {
+            color: #007bff;
+            text-decoration: none;
+        }
+
+        .form-text a:hover {
+            text-decoration: underline;
+        }
+
+        .otp-container {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+        }
+
+        .otp-input {
+            width: 45px;
+            text-align: center;
+        }
+
+        .loader {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #007bff;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+
+        #messageBox{
+            border-radius: 0.75rem;
+            padding: 15px;
+            margin: 15px 0;
+            font-size:  14px;
+            width: 100%;
+            border-style: solid;
+            border-width: 1px;
+            display: none;
+        }
+
+        .successMessageBox{
+            display: block !important;
+            border-color: var(--bs-success);
+            background: var(--bs-success-bg-subtle);
+            color: var(--bs-success);
+        }
+
+        .dangerMessageBox{
+            display: block !important;
+            background: var(--bs-danger-bg-subtle);
+            border-color: var(--bs-danger);
+            color: var(--bs-danger);
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+    </style>
+</head>
+
+<body class="d-flex">
+    <div class="login-card">
+        <h3>Welcome Back</h3>
+        <!-- <select style="display:none" id="environmentDropdown" onchange="onUpdateApiURL()"
+            class="bg-gray-100 border border-gray-300 text-gray-700 p-1 rounded focus:outline-none focus:ring focus:ring-blue-200 w-100 py-2">
+            <option value="local">Local</option>
+            <option value="development">
+                Development</option>
+            <option value="staging">
+                Staging</option>
+            <option value="production">
+                Production</option>
+        </select> -->
+        <hr>
+        <div id="messageBox"></div>
+        <form>
+            <div class="mb-3">
+                <label for="email" class="form-label">Email</label>
+                <input type="email" class="form-control" id="email" placeholder="Enter your email" required>
+            </div>
+            <div class="mb-3">
+                <label for="password" class="form-label">Password</label>
+                <input type="password" class="form-control" id="password" placeholder="Enter your password" required>
+            </div>
+            <div class="mb-3 otp-container d-none" id="otpSection">
+                <input type="text" class="form-control otp-input" id="otp1" maxlength="1" disabled>
+                <input type="text" class="form-control otp-input" id="otp2" maxlength="1" disabled>
+                <input type="text" class="form-control otp-input" id="otp3" maxlength="1" disabled>
+                <input type="text" class="form-control otp-input" id="otp4" maxlength="1" disabled>
+                <input type="text" class="form-control otp-input" id="otp5" maxlength="1" disabled>
+                <input type="text" class="form-control otp-input" id="otp6" maxlength="1" disabled>
+            </div>
+            <button type="submit" id="loginBtn" class="btn btn-primary">Login</button>
+            <div id="loginLoader" class="loader d-none"></div>
+            <button type="button" id="saveOtp" class="btn btn-primary d-none">Save OTP</button>
+        </form>
+        <div class="form-text text-center mt-3">
+            <a href="#">Forgot Password?</a>
+        </div>
+    </div>
+</body>
+
+<script>
+    const dropdown = document.getElementById('environmentDropdown') || 'production';
+    document.getElementById('loginBtn').addEventListener('click', function (event) {
+        event.preventDefault(); // Prevent form submission
+
+        const email = document.getElementById('email').value.trim();
+        const password = document.getElementById('password').value.trim();
+        const loginBtn = document.getElementById('loginBtn');
+        const loginLoader = document.getElementById('loginLoader');
+        const emailInput = document.getElementById('email');
+        const passwordInput = document.getElementById('password');
+
+        if (!email || !password) {
+            alert('Please enter both email and password.');
+            return;
+        }
+
+        // Show loader and disable inputs/button
+        // loginBtn.classList.add('d-none');
+        loginLoader.classList.remove('d-none');
+        emailInput.disabled = true;
+        passwordInput.disabled = true;
+        loginBtn.disabled = true;
+
+        const poolData = {
+            UserPoolId: getCognitoCredentials().poolID, // Replace with your User Pool ID
+            ClientId: getCognitoCredentials().clientID // Replace with your App Client ID
+        };
+
+        const userPool = new AmazonCognitoIdentity.CognitoUserPool(poolData);
+
+        const authDetails = new AmazonCognitoIdentity.AuthenticationDetails({
+            Username: email,
+            Password: password
+        });
+
+        const userData = {
+            Username: email,
+            Pool: userPool
+        };
+
+        const cognitoUser = new AmazonCognitoIdentity.CognitoUser(userData);
+
+        cognitoUser.authenticateUser(authDetails, {
+            onSuccess: async  function (result) {
+                const token = result.getIdToken().getJwtToken();
+                cognitoToken = token
+                sessionStorage.setItem('cognitoToken', token);
+
+                const env = dropdown.value;
+                // if(env === 'production' || env === 'staging'){
+                //     await generateOTP()
+
+                //     // Hide loader and show OTP section
+                //     loginLoader.classList.add('d-none');
+                //     emailInput.parentElement.classList.add('d-none');
+                //     passwordInput.parentElement.classList.add('d-none');
+                //     document.getElementById('otpSection').classList.remove('d-none');
+                //     document.getElementById('saveOtp').classList.remove('d-none');
+                //     document.querySelectorAll('.otp-input').forEach(input => input.disabled = false);
+                // }else{
+                    sessionStorage.setItem('x-otp', '000000');
+                    sessionStorage.setItem('otp-expiry', new Date(new Date().getTime() + 30 * 60 * 60 * 1000).toISOString());
+                    window.location.href = 'index.html';
+                // }
+
+            },
+            onFailure: function (err) {
+                console.error(err);
+                messageBox.classList.add('dangerMessageBox')
+                messageBox.innerText = 'Login failed: ' + (err.message || 'Unknown error')
+
+                // Hide loader and re-enable inputs/button
+                loginLoader.classList.add('d-none');
+                loginBtn.classList.remove('d-none');
+                emailInput.disabled = false;
+                passwordInput.disabled = false;
+                loginBtn.disabled = false;
+            }
+        });
+    });
+
+    // Handle OTP submission
+    document.getElementById('saveOtp').addEventListener('click', () => {
+        const otp = [
+            document.getElementById('otp1').value,
+            document.getElementById('otp2').value,
+            document.getElementById('otp3').value,
+            document.getElementById('otp4').value,
+            document.getElementById('otp5').value,
+            document.getElementById('otp6').value
+        ].join('');
+
+        if (otp.length === 6) {
+            sessionStorage.setItem('x-otp', otp);
+
+            // Set OTP expiry time (30 minutes from now)
+            const expiryTime = new Date(new Date().getTime() + 30 * 60 * 1000).toISOString();
+            sessionStorage.setItem('otp-expiry', expiryTime);
+
+            messageBox.classList.add('successMessageBox')
+            messageBox.innerText = 'OTP saved successfully.'
+
+            window.location.href = 'index.html';
+        } else {
+            messageBox.classList.add('dangerMessageBox')
+            messageBox.innerText = 'Please enter a valid 6-digit OTP.'
+        }
+    });
+
+    // OTP input handling
+    const otpInputs = document.querySelectorAll('.otp-input');
+    otpInputs.forEach((input, index) => {
+        input.addEventListener('input', (e) => {
+            if (e.target.value.length === 1 && index < otpInputs.length - 1) {
+                otpInputs[index + 1].focus();
+            }
+        });
+        input.addEventListener('keydown', (e) => {
+            if (e.key === 'Backspace' && !e.target.value && index > 0) {
+                otpInputs[index - 1].focus();
+            }
+        });
+    });
+
+    async function generateOTP() {
+
+        try {
+            const response = await fetch(`${apiURL}/system/otp`, {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${cognitoToken}`,
+                    'x-origin-ip': originIP,
+                    'user-agent': 'infithraAdmin/1.0.0'
+                },
+            });
+
+            let responseData;
+            const messageBox = document.getElementById('messageBox')
+            try {
+                responseData = await response.json();
+            } catch (error) {
+                responseData = { message: 'Failed to parse error response.' };
+            }
+
+            if (!response.ok) {
+                messageBox.classList.add('dangerMessageBox')
+                messageBox.innerText = `Failed to generate OTP. Message: ${responseData.message || 'Unknown error'}`
+                return;
+            }
+
+            messageBox.classList.add('successMessageBox')
+            messageBox.innerText = "Login Succesful and OTP sent to your mail."
+        } catch (error) {
+            console.error('Error:', error);
+            messageBox.classList.add('dangerMessageBox')
+            messageBox.innerText = `An error occurred during the process.`
+            throw error;
+        }
+    };
+
+    function onUpdateApiURL(){
+        const env = dropdown.value;
+        updateApiURL(env);
+    }
+</script>
+
+</html>
