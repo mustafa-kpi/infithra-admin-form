@@ -644,7 +644,8 @@
                     'client': accountId,
                     'Authorization': `Bearer ${cognitoToken}`,
                     'x-origin-ip': originIP,
-                    'x-otp': otp
+                    'x-otp': otp,
+                    'X-Compression': false
                 }
             });
             if (!response.ok) throw new Error('Could not fetch company info');
