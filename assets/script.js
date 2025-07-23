@@ -51,7 +51,7 @@ window.onload = async () => {
         apiManintenanceURL = getApiManintenanceUrlByEnvironment(selectedEnv);
 
     }else{
-        updateApiURL('local')
+        updateApiURL('production')
     }
 
     if (!cognitoToken || !otp) {
