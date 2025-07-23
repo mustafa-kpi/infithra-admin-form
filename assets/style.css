@@ -101,3 +101,7 @@ button, input{
 .dropdown-item.active.selected .text{
     color: white!important;
 }
+
+.text-warning{
+    color: orange !important;
+}

@@ -1,0 +1,729 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Company View</title>
+    <!-- Tailwind CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Include Bootstrap JavaScript -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/js-cookie/3.0.1/js.cookie.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+
+    <script src="assets/script.js"></script>
+    <link rel="stylesheet" href="assets/style.css">
+
+    <style>
+        .profile-section {
+            background: linear-gradient(to right, #2563eb, #1d4ed8);
+            min-height: 300px;
+        }
+        .company-logo {
+            /* width: 180px; */
+            height: 180px;
+            /* border: 4px solid white; */
+            background-color: white;
+            /* border-radius: 50%; */
+            overflow: hidden;
+            /* box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); */
+        }
+        .tab-content {
+            min-height: 400px;
+        }
+        .system-control-btn {
+            transition: all 0.3s ease;
+        }
+        .system-control-btn:hover {
+            transform: translateY(-2px);
+        }
+        .nav-tabs .nav-link.active {
+            border-bottom: 3px solid #2563eb;
+            color: #2563eb;
+            font-weight: 600;
+        }
+        .nav-tabs .nav-link {
+            color: #64748b;
+            border: none;
+            padding: 1rem 1.5rem;
+            transition: all 0.3s ease;
+        }
+        .nav-tabs .nav-link:hover {
+            color: #2563eb;
+            border-bottom: 3px solid #93c5fd;
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <!-- Navigation Bar -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm">
+        <div class="container">
+            <a class="navbar-brand font-bold text-xl" href="#">Infithra Admin</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto align-items-center">
+                    <li class="nav-item">
+                        <a class="nav-link text-lg hover:text-blue-600" href="company.html">Company Information</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link text-lg hover:text-blue-600" href="system-control.html">System Control</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link text-lg hover:text-blue-600" href="system-maintenance.html">System Maintenance</a>
+                    </li>
+                    <li class="nav-item">
+                        <button style="height: 40px;" class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 lg transition" onclick="logout()">Logout</button>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container py-6">
+      <div class="row">
+        <!-- Left Card: Profile & Key Info -->
+        <div class="col-12 col-md-4 mb-4">
+          <div class="bg-white rounded-xl shadow p-4 flex flex-col items-center">
+            <div class="company-logo mb-3">
+              <img id="companyLogo" src="" alt="Company Logo" class="w-full h-full object-contain">
+            </div>
+            <h2 id="companyName" class="text-2xl font-bold mb-1 text-center">Loading...</h2>
+            <p id="companyLocation" class="text-base text-gray-500 mb-2 text-center"><i class="fas fa-map-marker-alt me-2"></i>Loading...</p>
+            <hr class="w-full my-2">
+            <div class="w-full">
+                <p class="mb-3"><strong>Account ID:</strong> <span id="accountId"></span></p>
+                <p class="mb-3"><strong>Legal Name:</strong> <span id="legalName"></span></p>
+                <p class="mb-3"><strong>Website:</strong> <a id="website" href="" target="_blank" class="text-blue-600"></a></p>
+                <p class="mb-3"><strong>VAT Number:</strong> <span id="vatNumber"></span></p>
+                <p class="mb-3"><strong>Phone:</strong> <span id="phone"></span></p>
+                <p class="mb-3"><strong>Fax:</strong> <span id="fax"></span></p>
+                <p class="mb-3"><strong>Address:</strong> <span id="address"></span></p>
+                <p class="mb-3"><strong>Timezone:</strong> <span id="timezone"></span></p>
+                <p class="mb-3"><strong>Created At:</strong> <span id="createdAt"></span></p>
+                <hr class="w-full my-3">
+                <div class="text-center">
+                    <button onclick="editCompany()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-4 transition-colors duration-200 w-full">
+                        <i class="fas fa-edit me-2"></i>Edit Company
+                    </button>
+                </div>
+            </div>
+          </div>
+        </div>
+        <!-- Right Card: Tabs & Content -->
+        <div class="col-12 col-md-8">
+          <div class="bg-white rounded-xl shadow p-4">
+            <ul class="nav nav-tabs mb-4" id="companyTabs" role="tablist">
+              <li class="nav-item">
+                <a class="nav-link active" id="other-tab" data-bs-toggle="tab" href="#other" role="tab">Other Information</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" id="subscription-tab" data-bs-toggle="tab" href="#subscription" role="tab">Subscription Information</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" id="modules-tab" data-bs-toggle="tab" href="#modules" role="tab">Modules</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" id="system-tab" data-bs-toggle="tab" href="#system" role="tab">System Control</a>
+              </li>
+            </ul>
+            <div class="tab-content" id="companyTabContent">
+              <!-- other Information Tab -->
+              <div class="tab-pane fade show active" id="other" role="tabpanel">
+                <div class="row">
+                    <h3 class="text-xl font-semibold mb-3 mt-4">Account Managers</h3>
+                    <div id="accountManagersList">
+                      <!-- Account managers will be populated here -->
+                    </div>
+                </div>
+              </div>
+              <!-- Subscription Control Tab -->
+              <div class="tab-pane fade" id="subscription" role="tabpanel">
+                <div class="row">
+                  <!-- Plan Information -->
+                  <div class="col-12 col-md-4 mb-3">
+                    <div class="p-3 bg-gray-50 rounded-4">
+                      <p class="text-gray-600">Plan</p>
+                      <p id="subPlan" class="text-lg font-semibold"></p>
+                    </div>
+                  </div>
+                  <div class="col-12 col-md-4 mb-3">
+                    <div class="p-3 bg-gray-50 rounded-4">
+                      <p class="text-gray-600">Payment Status</p>
+                      <p id="subPaymentStatus" class="text-lg font-semibold"></p>
+                    </div>
+                  </div>
+                  <div class="col-12 col-md-4 mb-3">
+                    <div class="p-3 bg-gray-50 rounded-4">
+                      <p class="text-gray-600">Period (Days)</p>
+                      <p id="subPeriod" class="text-lg font-semibold"></p>
+                    </div>
+                  </div>
+
+                  <!-- Dates -->
+                  <div class="col-12 col-md-4 mb-3">
+                    <div class="p-3 bg-gray-50 rounded-4">
+                      <p class="text-gray-600">Subscribed Date</p>
+                      <p id="subSubscribedDate" class="text-lg font-semibold"></p>
+                    </div>
+                  </div>
+                  <div class="col-12 col-md-4 mb-3">
+                    <div class="p-3 bg-gray-50 rounded-4">
+                      <p class="text-gray-600">Start Date</p>
+                      <p id="subStartDate" class="text-lg font-semibold"></p>
+                    </div>
+                  </div>
+                  <div class="col-12 col-md-4 mb-3">
+                    <div class="p-3 bg-gray-50 rounded-4">
+                      <p class="text-gray-600">End Date</p>
+                      <p id="subEndDate" class="text-lg font-semibold"></p>
+                    </div>
+                  </div>
+
+                  <div class="col-12 col-md-4 mb-3">
+                    <div class="p-3 bg-gray-50 rounded-4">
+                      <p class="text-gray-600">Renewal Date</p>
+                      <p id="subRenewalDate" class="text-lg font-semibold"></p>
+                    </div>
+                  </div>
+
+                  <!-- User Limits -->
+                  <div class="col-12 col-md-4 mb-3">
+                    <div class="p-3 bg-gray-50 rounded-4">
+                      <p class="text-gray-600">Licensed Users</p>
+                      <p id="subLicensedUsers" class="text-lg font-semibold"></p>
+                    </div>
+                  </div>
+                  <div class="col-12 col-md-4 mb-3">
+                    <div class="p-3 bg-gray-50 rounded-4">
+                      <p class="text-gray-600">Total Employees</p>
+                      <p id="subTotalEmployees" class="text-lg font-semibold"></p>
+                    </div>
+                  </div>
+
+                  <div class="col-12 col-md-4 mb-3">
+                    <div class="p-3 bg-gray-50 rounded-4">
+                      <p class="text-gray-600">Payroll Employees</p>
+                      <p id="subPayrollEmployees" class="text-lg font-semibold"></p>
+                    </div>
+                  </div>
+                  <div class="col-12 col-md-4 mb-3">
+                    <div class="p-3 bg-gray-50 rounded-4">
+                      <p class="text-gray-600">ESS Users</p>
+                      <p id="subEssUsers" class="text-lg font-semibold"></p>
+                    </div>
+                  </div>
+
+                  <!-- Additional Features -->
+                  <div class="col-12 col-md-4 mb-3">
+                    <div class="p-3 bg-gray-50 rounded-4">
+                      <p class="text-gray-600">Storage (GB)</p>
+                      <p id="subStorage" class="text-lg font-semibold"></p>
+                    </div>
+                  </div>
+                  <div class="col-12 col-md-4 mb-3">
+                    <div class="p-3 bg-gray-50 rounded-4">
+                      <p class="text-gray-600">Subsidiary</p>
+                      <p id="subSubsidiary" class="text-lg font-semibold"></p>
+                    </div>
+                  </div>
+
+                  <div class="col-12 col-md-4 mb-3">
+                    <div class="p-3 bg-gray-50 rounded-4">
+                      <p class="text-gray-600">Work Calendar</p>
+                      <p id="subWorkCalendar" class="text-lg font-semibold"></p>
+                    </div>
+                  </div>
+                  <div class="col-12 col-md-4 mb-3">
+                    <div class="p-3 bg-gray-50 rounded-4">
+                      <p class="text-gray-600">Payment Gateway</p>
+                      <p id="subPaymentGateway" class="text-lg font-semibold"></p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+             <!-- Modules Tab -->
+              <div class="tab-pane fade" id="modules" role="tabpanel">
+                <div id="modulesList" class="row">
+                  <!-- Modules will be populated here -->
+                </div>
+              </div>
+              <!-- System Control Tab -->
+              <div class="tab-pane fade" id="system" role="tabpanel">
+                <div class="row">
+                  <div class="col-12 col-md-6 mb-3 h-100">
+                    <div class="system-control-card p-4 bg-gray-50 rounded-4 d-flex flex-column justify-content-between">
+                      <h3 class="text-xl font-semibold mb-3">Cache Management</h3>
+                      <p class="text-gray-600 mb-3">Clear the system cache to resolve any data inconsistencies.</p>
+                      <button onclick="resetCache()" class="system-control-btn bg-blue-600 text-white px-4 py-2 rounded-4 hover:bg-blue-700 w-100">
+                        <i class="fas fa-sync-alt me-2"></i>Reset Cache
+                      </button>
+                    </div>
+                  </div>
+                  <div class="col-12 col-md-6 mb-3 h-100">
+                    <div class="system-control-card p-4 bg-gray-50 rounded-4 d-flex flex-column justify-content-between">
+                      <h3 class="text-xl font-semibold mb-3">System Upgrade</h3>
+                      <p class="text-gray-600 mb-2">Upgrade the system to the latest version.</p>
+
+                      <!-- Upgrade Status Display -->
+                      <div id="upgradeStatus" class="">
+                        <div class="d-flex align-items-center mb-2">
+                          <div class="spinner-border spinner-border-sm me-2" role="status" id="upgradeStatusSpinner">
+                            <span class="visually-hidden">Loading...</span>
+                          </div>
+                          <span class="text-muted">Checking upgrade status...</span>
+                        </div>
+                      </div>
+
+                      <button id="upgradeButton" onclick="upgradeSystem()" class="system-control-btn bg-green-600 text-white px-4 py-2 rounded-4 hover:bg-green-700 w-100" disabled>
+                        <i class="fas fa-arrow-up me-2"></i>
+                        <span id="upgradeButtonText">System Upgrade</span>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+                <div class="row">
+                    <!-- Pending Migrations List -->
+                      <div id="pendingMigrations" class="mb-3" style="display: none;">
+                        <p class="text-md font-semibold mb-2 text-warning">Pending Migrations:</h5>
+                        <ul id="migrationsList" class="list-unstyled small text-gray-600">
+                          <!-- Migration files will be listed here -->
+                        </ul>
+                      </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Loading Spinner -->
+    <div id="apiLoader" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" style="display: none;">
+          <div class="bg-white p-6 rounded-lg flex items-center space-x-4">
+              <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+              <div id="loaderText" class="text-lg font-medium">Loading companies...</div>
+          </div>
+      </div>
+</body>
+
+    <script>
+
+        let companyData = null;
+        let subscriptionData = null;
+
+        async function fetchCompanyInfo(accountId) {
+            try {
+                const response = await fetch(`${apiURL}/info/company`, {
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'client': accountId,
+                        'Authorization': `Bearer ${cognitoToken}`,
+                        'x-origin-ip': originIP,
+                        'x-otp': otp,
+                        'x-compression': false
+                    }
+                });
+                if (!response.ok) throw new Error('Could not fetch company info');
+                const data = await response.json();
+                return data.data;
+            } catch (error) {
+                console.error('Error fetching company info:', error);
+                return null;
+            }
+        }
+
+        async function fetchSubscriptionInfo(accountId) {
+            try {
+                const response = await fetch(`${apiURL}/system/client/subscriptions/${accountId}`, {
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'client': accountId,
+                        'Authorization': `Bearer ${cognitoToken}`,
+                        'x-origin-ip': originIP,
+                        'x-otp': otp,
+                        'x-compression': false
+                    }
+                });
+                if (!response.ok) throw new Error('Could not fetch subscription info');
+                const data = await response.json();
+                return data;
+            } catch (error) {
+                console.error('Error fetching subscription info:', error);
+                return null;
+            }
+        }
+
+        // function showLoader(show, 'Loading Company Info...') {
+        //     const loader = document.getElementById('loadingSpinner');
+        //     if (show) {
+        //         loader.style.display = 'flex';
+        //     } else {
+        //         loader.style.display = 'none';
+        //     }
+        // }
+
+        function editCompany(){
+          if (companyData && companyData.accountId) {
+              window.location.href = `company.html?editId=${companyData.accountId}`;
+          }
+        }
+
+        async function fetchAndPopulateCompany() {
+            showApiLoader(true, 'Loading Company Info...');
+
+            const urlParams = new URLSearchParams(window.location.search);
+            const accountId = urlParams.get('id');
+            if (!accountId) {
+                window.location.href = 'company.html';
+                return;
+            }
+
+            try {
+                companyData = await fetchCompanyInfo(accountId);
+                subscriptionData = await fetchSubscriptionInfo(accountId);
+
+                if (companyData) {
+                    populateCompanyData(companyData, subscriptionData);
+                    // Check upgrade status after populating company data
+                    checkUpgradeStatus(accountId);
+                } else {
+                    // Handle error appropriately
+                    document.getElementById('companyName').textContent = 'Failed to load company info.';
+                    document.getElementById('companyLocation').textContent = 'Error loading data';
+                }
+            } catch (error) {
+                console.error('Error in fetchAndPopulateCompany:', error);
+                document.getElementById('companyName').textContent = 'Error loading company data';
+                document.getElementById('companyLocation').textContent = 'Please try again';
+            } finally {
+                showApiLoader(false);
+            }
+        }
+
+        function safeSetTextContent(elementId, value) {
+            const element = document.getElementById(elementId);
+            if (element) {
+                element.textContent = value;
+            } else {
+                console.warn(`Element with ID '${elementId}' not found`);
+            }
+        }
+
+        function safeSetAttribute(elementId, attribute, value) {
+            const element = document.getElementById(elementId);
+            if (element) {
+                element[attribute] = value;
+            } else {
+                console.warn(`Element with ID '${elementId}' not found`);
+            }
+        }
+
+        function populateCompanyData(data, subscription) {
+            // Update profile section
+            safeSetAttribute('companyLogo', 'src', data.logo || 'assets/default-company-logo.png');
+            safeSetTextContent('companyName', data.name || 'N/A');
+            safeSetTextContent('companyLocation', `${data.billingAddress?.city || ''}, ${data.billingAddress?.country || ''}`);
+
+            // Update other information
+            safeSetTextContent('accountId', data.accountId || 'N/A');
+            safeSetTextContent('legalName', data.legalName || 'N/A');
+            safeSetAttribute('website', 'href', data.url || '#');
+            safeSetTextContent('website', data.url || 'N/A');
+            safeSetTextContent('vatNumber', data.billingAddress?.vat || 'N/A');
+            safeSetTextContent('phone', data.billingAddress?.phone || 'N/A');
+            safeSetTextContent('fax', data.billingAddress?.fax || 'N/A');
+            safeSetTextContent('address', `${data.billingAddress?.addressLine1 || ''}, ${data.billingAddress?.addressLine2 || ''}, ${data.billingAddress?.city || ''}, ${data.billingAddress?.state || ''}, ${data.billingAddress?.zip || ''}`.replace(/^,\s*|,\s*$/g, '') || 'N/A');
+            safeSetTextContent('timezone', data.timezone || 'N/A');
+
+            // Update company created date
+            safeSetTextContent('createdAt', data.createdAt ? new Date(data.createdAt).toLocaleDateString() : 'N/A');
+
+            // Populate account managers
+            populateAccountManagers(data.accountManager);
+
+            // Update subscription information
+            if (subscription) {
+                safeSetTextContent('subStartDate', subscription?.startDate ? new Date(subscription?.startDate).toLocaleDateString() : 'N/A');
+                safeSetTextContent('subEndDate', subscription?.endDate ? new Date(subscription?.endDate).toLocaleDateString() : 'N/A');
+                safeSetTextContent('subPlan', subscription?.plan || 'N/A');
+                safeSetTextContent('subPaymentStatus', subscription?.paymentStatus || 'N/A');
+                safeSetTextContent('subPeriod', subscription?.period || 'N/A');
+                safeSetTextContent('subSubscribedDate', subscription?.subscribedDate ? new Date(subscription?.subscribedDate).toLocaleDateString() : 'N/A');
+                safeSetTextContent('subRenewalDate', subscription?.renewalDate ? new Date(subscription?.renewalDate).toLocaleDateString() : 'N/A');
+                safeSetTextContent('subLicensedUsers', subscription?.licensedUsers || 'N/A');
+                safeSetTextContent('subTotalEmployees', subscription?.totalEmployees || 'N/A');
+                safeSetTextContent('subPayrollEmployees', subscription?.payrollEmployees || 'N/A');
+                safeSetTextContent('subEssUsers', subscription?.essUsers || 'N/A');
+                safeSetTextContent('subStorage', subscription?.storage || 'N/A');
+                safeSetTextContent('subSubsidiary', subscription?.subsidiary || 'N/A');
+                safeSetTextContent('subWorkCalendar', subscription?.workCalendar || 'N/A');
+                safeSetTextContent('subPaymentGateway', getPaymentGatewayName(subscription?.paymentGateway));
+            } else {
+                ['StartDate', 'EndDate', 'Plan', 'PaymentStatus', 'Period', 'SubscribedDate', 'RenewalDate',
+                 'LicensedUsers', 'TotalEmployees', 'PayrollEmployees', 'EssUsers', 'Storage', 'Subsidiary',
+                 'WorkCalendar', 'PaymentGateway'].forEach(field => {
+                    safeSetTextContent(`sub${field}`, 'N/A');
+                });
+            }
+
+            // Populate modules
+            const modulesList = document.getElementById('modulesList');
+            modulesList.innerHTML = '';
+            if (subscription && subscription.modules) {
+                Object.keys(subscription.modules).forEach(module => {
+                    const moduleCard = document.createElement('div');
+                    moduleCard.className = 'col-md-6 col-lg-4 mb-3';
+                    moduleCard.innerHTML = `
+                        <div class="bg-gray-50 p-4 rounded-4 h-100">
+                            <p class="font-semibold mb-2">${module}</h4>
+                            <p class="m-0 inline-block px-2 py-1 text-xs ${subscription.modules[module] ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'} rounded">
+                                ${subscription.modules[module] ? 'Enabled' : 'Disabled'}
+                            </span>
+                        </div>
+                    `;
+                    modulesList.appendChild(moduleCard);
+                });
+            } else {
+                modulesList.innerHTML = '<div class="col-12"><p class="text-gray-500">No modules data available</p></div>';
+            }
+        }
+
+        function populateAccountManagers(accountManagers) {
+            const managersList = document.getElementById('accountManagersList');
+            managersList.innerHTML = '';
+
+            if (accountManagers && accountManagers.length > 0) {
+                accountManagers.forEach(manager => {
+                    const managerCard = document.createElement('div');
+                    managerCard.className = 'mb-3 p-3 bg-gray-50 rounded-4';
+                    managerCard.innerHTML = `
+                        <div class="d-flex align-items-center mb-2">
+                            <i class="fas fa-user-tie me-2 text-blue-600"></i>
+                            <strong>${manager.fullName || (manager.firstName + ' ' + manager.lastName)}</strong>
+                        </div>
+                        <div class="small text-gray-600">
+                            <div class="mb-1"><i class="fas fa-envelope me-2"></i>${manager.email || 'N/A'}</div>
+                            <div><i class="fas fa-phone me-2"></i>${manager.phone || 'N/A'}</div>
+                        </div>
+                    `;
+                    managersList.appendChild(managerCard);
+                });
+            } else {
+                managersList.innerHTML = '<p class="text-gray-500">No account managers assigned</p>';
+            }
+        }
+
+        function getPaymentGatewayName(gatewayCode) {
+            const gateways = {
+                '0': 'None',
+                '1': 'Stripe',
+                '2': 'PayPal',
+                '3': 'Square',
+                '4': 'Razorpay',
+                '5': 'Authorize.Net'
+            };
+            return gateways[gatewayCode] || 'Unknown';
+        }
+
+        async function resetCache() {
+            if (!companyData || !companyData.accountId) {
+                alert('Company data not available');
+                return;
+            }
+
+            const resetCacheButton = document.querySelector('button[onclick="resetCache()"]');
+            const originalContent = resetCacheButton.innerHTML;
+
+            try {
+                // Show loading state
+                resetCacheButton.disabled = true;
+                resetCacheButton.innerHTML = `
+                    <div class="spinner-border spinner-border-sm me-2" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    Resetting Cache...
+                `;
+
+                const response = await fetch(`${apiURL}/system/cache/clear`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'client': companyData.accountId,
+                        'Authorization': `Bearer ${cognitoToken}`,
+                        'x-origin-ip': originIP,
+                        'x-otp': otp,
+                        'x-compression': false
+                    }
+                });
+                if (!response.ok) throw new Error('Failed to reset cache');
+                alert('Cache reset successfully');
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Failed to reset cache');
+            } finally {
+                // Restore original button state
+                resetCacheButton.disabled = false;
+                resetCacheButton.innerHTML = originalContent;
+            }
+        }
+
+        async function upgradeSystem() {
+            if (!companyData || !companyData.accountId) {
+                alert('Company data not available');
+                return;
+            }
+
+            const upgradeButton = document.getElementById('upgradeButton');
+            const upgradeButtonText = document.getElementById('upgradeButtonText');
+            const originalContent = upgradeButton.innerHTML;
+
+            try {
+                // Show loading state
+                upgradeButton.disabled = true;
+                upgradeButton.innerHTML = `
+                    <div class="spinner-border spinner-border-sm me-2" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    Upgrading System...
+                `;
+
+                const response = await fetch(`${apiURL}/system/upgrade`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'client': companyData.accountId,
+                        'Authorization': `Bearer ${cognitoToken}`,
+                        'x-origin-ip': originIP,
+                        'x-otp': otp,
+                        'x-compression': false
+                    }
+                });
+                if (!response.ok) throw new Error('Failed to upgrade system');
+                alert('System upgraded successfully');
+                // Re-check upgrade status after successful upgrade
+                checkUpgradeStatus(companyData.accountId);
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Failed to upgrade system');
+            } finally {
+                // Restore original button state
+                upgradeButton.disabled = false;
+                upgradeButton.innerHTML = originalContent;
+            }
+        }
+
+        async function checkUpgradeStatus(accountId) {
+            const upgradeStatusDiv = document.getElementById('upgradeStatus');
+            const upgradeStatusSpinner = document.getElementById('upgradeStatusSpinner');
+            const pendingMigrationsDiv = document.getElementById('pendingMigrations');
+            const migrationsListUl = document.getElementById('migrationsList');
+            const upgradeButton = document.getElementById('upgradeButton');
+
+            try {
+                // Show loading state
+                upgradeStatusDiv.innerHTML = `
+                    <div class="d-flex align-items-center mb-2">
+                        <div class="spinner-border spinner-border-sm me-2" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                        <span class="text-muted">Checking upgrade status...</span>
+                    </div>
+                `;
+                pendingMigrationsDiv.style.display = 'none';
+                upgradeButton.disabled = true;
+                upgradeButton.style.display = 'none';
+
+                const response = await fetch(`${apiURL}/system/upgrade/check`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'client': accountId,
+                        'Authorization': `Bearer ${cognitoToken}`,
+                        'x-origin-ip': originIP,
+                        'x-otp': otp,
+                        'x-compression': false
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to check upgrade status');
+                }
+
+                const fullResponse = await response.json();
+                const data = fullResponse.data;
+                const timestamp = new Date().toLocaleString();
+
+                if (data.status === 'up-to-date') {
+                    // System is up to date
+                    upgradeStatusDiv.innerHTML = `
+                        <div class="d-flex align-items-center mb-2">
+                            <i class="fas fa-check-circle text-success me-2"></i>
+                            <span class="text-success">Up to date as of ${timestamp}</span>
+                        </div>
+                    `;
+                    pendingMigrationsDiv.style.display = 'none';
+                    upgradeButton.disabled = false;
+                    upgradeButton.style.display = 'block';
+                    upgradeButtonText.textContent = 'Re Upgrade System'
+                } else if (data.status === 'pending-migrations') {
+                    // There are pending migrations
+                    const migrationCount = data.pendingMigrations ? data.pendingMigrations.length : 0;
+                    upgradeStatusDiv.innerHTML = `
+                        <div class="d-flex align-items-center mb-2">
+                            <i class="fas fa-exclamation-triangle text-warning me-2"></i>
+                            <span class="text-warning">${migrationCount} pending migration(s) found</span>
+                        </div>
+                    `;
+
+                    // Show pending migrations list
+                    if (data.pendingMigrations && data.pendingMigrations.length > 0) {
+                        migrationsListUl.innerHTML = '';
+                        data.pendingMigrations.forEach(migration => {
+                            const li = document.createElement('li');
+                            li.className = 'mb-1';
+                            li.innerHTML = `<i class="fas fa-file-code me-2"></i>${migration}`;
+                            migrationsListUl.appendChild(li);
+                        });
+                        pendingMigrationsDiv.style.display = 'block';
+                    } else {
+                        pendingMigrationsDiv.style.display = 'none';
+                    }
+
+                    upgradeButton.disabled = false;
+                    upgradeButton.style.display = 'block';
+
+                } else {
+                    // Unknown status
+                    upgradeStatusDiv.innerHTML = `
+                        <div class="d-flex align-items-center mb-2">
+                            <i class="fas fa-question-circle text-muted me-2"></i>
+                            <span class="text-muted">Unknown upgrade status</span>
+                        </div>
+                    `;
+                    pendingMigrationsDiv.style.display = 'none';
+                    upgradeButton.disabled = true;
+                }
+            } catch (error) {
+                console.error('Error checking upgrade status:', error);
+                upgradeStatusDiv.innerHTML = `
+                    <div class="d-flex align-items-center mb-2">
+                        <i class="fas fa-exclamation-circle text-danger me-2"></i>
+                        <span class="text-danger">Failed to check upgrade status</span>
+                    </div>
+                `;
+                pendingMigrationsDiv.style.display = 'none';
+                upgradeButton.disabled = true;
+            }
+        }
+
+        // Initialize page
+        // document.addEventListener('DOMContentLoaded', () => {
+        //     fetchAndPopulateCompany();
+        // });
+    </script>
+</html>

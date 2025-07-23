@@ -19,8 +19,8 @@ const getCognitoCredentials = () => {
         };
       case "staging":
         return {
-            poolID: "us-east-1_B0evpPXDl",
-            clientID: "68cf37qtu8rusjha7ot8f20q3m",
+            poolID: "us-east-1_QQBXg3f2l",
+            clientID: "2qpj2s3vv3jninl7hoql5nf5du",
             region: "us-east-1"
         };
       case "production":
@@ -48,8 +48,10 @@ window.onload = async () => {
 
     if(selectedEnv){
         apiURL = getApiUrlByEnvironment(selectedEnv);
+        apiManintenanceURL = getApiManintenanceUrlByEnvironment(selectedEnv);
+
     }else{
-        updateApiURL('production');
+        updateApiURL('local')
     }
 
     if (!cognitoToken || !otp) {
@@ -62,10 +64,20 @@ window.onload = async () => {
     }
 
     // Custom logic for this specific HTML page
-    if (window.location.href.includes('company')) {
-        fetchCountryAndTimezones();
-        fetchCompanies();
+    if (window.location.href.includes('company.html')) {
+        const urlParams = new URLSearchParams(window.location.search);
+        const editId = urlParams.get('editId');
+        if(editId) {
+            editCompany(editId);
+        } else {
+            fetchCompanies();
+        }
         console.log("✅ Company Page functions initialized");
+    }
+
+    if (window.location.href.includes('company-view.html')) {
+        fetchAndPopulateCompany();
+        console.log("✅ Company View Page functions initialized");
     }
 
     if(window.location.href.includes('system-control')) {
@@ -108,16 +120,37 @@ function getApiUrlByEnvironment(environment) {
         default: return 'http://localhost:5303';
     }
 }
-
+function getApiManintenanceUrlByEnvironment(environment) {
+    switch (environment) {
+        case 'local': return 'http://localhost:3000';
+        case 'development': return 'https://api-status.infithra.com';
+        case 'staging': return 'https://api-status.infithra.com';
+        case 'production': return 'https://api-status.infithra.com';
+        default: return 'http://localhost:3000';
+    }
+}
 function updateApiURL(selectedEnv) {
     sessionStorage.setItem('selectedEnv', selectedEnv);
     apiURL = getApiUrlByEnvironment(selectedEnv);
+    apiManintenanceURL = getApiManintenanceUrlByEnvironment(selectedEnv);
     console.log(`🌍 Environment set to: ${selectedEnv}`);
     console.log(`🔗 API URL updated to: ${apiURL}`);
+     console.log(`🔗 Manintenance API URL updated to: ${apiManintenanceURL}`);
 }
 
 function logout() {
     localStorage.clear();
     sessionStorage.clear();
     window.location.href = '/login.html';
+}
+
+function showApiLoader(isLoading, text) {
+    const apiLoaderDiv = document.getElementById('apiLoader');
+    const apiLoaderText = apiLoaderDiv.querySelector('#loaderText');
+    if (isLoading) {
+        apiLoaderText.textContent = text
+        apiLoaderDiv.style.display = 'flex';
+    } else {
+        apiLoaderDiv.style.display = 'none';
+    }
 }

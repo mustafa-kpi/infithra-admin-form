@@ -52,7 +52,7 @@
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav ml-auto">
+                <ul class="navbar-nav ml-auto align-items-center">
                     <li class="nav-item">
                         <a class="nav-link text-lg hover:text-blue-600" href="company.html">Company
                             Information</a>
@@ -68,7 +68,7 @@
                         <a class="nav-link text-lg hover:text-blue-600" href="system-maintenance.html">System
                             Maintenance</a>
                     </li>
-                    <button class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg transition duration-200 ease-in-out cursor-pointer" onclick="logout()">Logout</a>
+                    <button style="height: 40px;" class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg transition duration-200 ease-in-out cursor-pointer" onclick="logout()">Logout</a>
                 </ul>
             </div>
         </div>
@@ -82,15 +82,33 @@
             </button>
         </div>
 
+        <!-- Company List Loading Button -->
+        <!-- <div id="companyListLoadingBtn" class="flex justify-center mb-6" style="display: none;">
+            <button class="bg-gray-500 text-white px-6 py-3 rounded-lg cursor-not-allowed" disabled>
+                <div class="flex items-center space-x-2">
+                    <div class="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                    <span>Loading companies...</span>
+                </div>
+            </button>
+        </div> -->
+
         <!-- Company List -->
         <div id="companyList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
-            <div id="companyListLoader" class="loader mx-auto hidden"></div>
+            <!-- Company list content will be populated here -->
+        </div>
+
+        <!-- Company List Loader -->
+        <div id="apiLoader" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" style="display: none;">
+            <div class="bg-white p-6 rounded-lg flex items-center space-x-4">
+                <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                <div id="loaderText" class="text-lg font-medium">Loading companies...</div>
+            </div>
         </div>
 
         <!-- Company Form -->
         <div id="companyFormContainer" class="bg-white p-6 rounded-3xl shadow-lg hidden">
             <h2 id="formTitle" class="text-2xl font-semibold mb-4 text-gray-800">New Company</h2>
-            <div id="formLoader" class="loader mx-auto hidden"></div>
+            <!-- <div id="formLoader" class="loader mx-auto hidden"></div> -->
 
 
             <div class="step-indicator">
@@ -182,7 +200,7 @@
                         </div>
                         <div class="form-group">
                             <label for="currency" class="block text-sm font-medium text-gray-700">Currency</label>
-                            <select id="currency" name="currency" class="mt-1 w-full p-2 border rounded-lg" disabled>
+                            <select id="currency" name="currency" class="mt-1 w-full p-2 border rounded-lg">
                                 <option value="">Select a currency</option>
                             </select>
                             <div class="invalid-feedback text-red-500 text-xs mt-1" style="display:none;"></div>
@@ -284,12 +302,6 @@
                             <input type="number" id="workCalendar" name="workCalendar" class="form-control">
                             <div class="invalid-feedback text-red-500 text-xs mt-1" style="display:none;"></div>
                         </div>
-                        <div class="form-group col-12 col-md-6 col-lg-4 col-xl-3 mb-3">
-                            <div class="form-check mt-4 pt-2">
-                                <input type="checkbox" id="offlineApp" name="offlineApp" class="form-check-input">
-                                <label for="offlineApp" class="form-check-label">Offline App</label>
-                            </div>
-                        </div>
                     </div>
                 </div>
 
@@ -306,6 +318,12 @@
                                 <option value="Premium">Premium</option>
                                 <option value="Enterprise">Enterprise</option>
                             </select>
+                        </div>
+                        <div class="form-group col-12 col-md-6 col-lg-4 col-xl-3 mb-3">
+                            <div class="form-check mt-4 pt-2">
+                                <input type="checkbox" id="offlineApp" name="offlineApp" class="form-check-input">
+                                <label for="offlineApp" class="form-check-label">Offline App</label>
+                            </div>
                         </div>
                         <!-- Modules -->
                         <div id="resources" class="mt-4">
@@ -355,10 +373,10 @@
 </script>
 <script>
     const companyList = document.getElementById('companyList');
-    const companyListLoader = document.getElementById('companyListLoader');
+    // const apiLoader = document.getElementById('apiLoader');
     const companyFormContainer = document.getElementById('companyFormContainer');
     const companyForm = document.getElementById('companyForm');
-    const formLoader = document.getElementById('formLoader');
+    // const formLoader = document.getElementById('formLoader');
     const newCompanyBtn = document.getElementById('newCompanyBtn');
     const prevBtn = document.getElementById('prevButton');
     const submitBtn = document.getElementById('submitButton');
@@ -383,6 +401,7 @@
             countries = await response.json();
             const timezoneSelect = document.getElementById('timezone');
             const countrySelect = document.getElementById('country');
+            const currencySelect = document.getElementById('currency');
 
             countries.forEach(country => {
                 const countryOption = document.createElement('option');
@@ -404,26 +423,79 @@
                     country.timezones.forEach(timezone => {
                         const option = document.createElement('option');
                         option.value = timezone.zoneName;
-                        option.textContent = `${country.name}: ${timezone.zoneName} - ${timezone.gmtOffsetName}`;
+                        option.textContent = `${timezone.zoneName} - ${timezone.gmtOffsetName}`;
                         timezoneSelect.appendChild(option);
                     });
                 }
             });
+
+            // Populate currency dropdown
+            const currencies = [...new Set(countries.map(country => country.currency).filter(Boolean))];
+            currencies.sort().forEach(currency => {
+                const currencyOption = document.createElement('option');
+                currencyOption.value = currency;
+                currencyOption.textContent = currency;
+                currencySelect.appendChild(currencyOption);
+            });
+
+            // Add country change event listener
+            countrySelect.addEventListener('change', handleCountryChange);
         } catch (error) {
             console.error('Error fetching timezones:', error);
         }
     }
 
+    // Handle country selection change
+    function handleCountryChange() {
+        const countrySelect = document.getElementById('country');
+        const timezoneSelect = document.getElementById('timezone');
+        const currencySelect = document.getElementById('currency');
+        const selectedCountryName = countrySelect.value;
+
+        if (!selectedCountryName) {
+            // Reset fields if no country selected
+            timezoneSelect.value = '';
+            currencySelect.value = '';
+            timezoneSelect.disabled = false;
+            currencySelect.disabled = false;
+            return;
+        }
+
+        const selectedCountry = countries.find(country => country.name === selectedCountryName);
+
+        if (selectedCountry) {
+            // Auto-patch currency
+            if (selectedCountry.currency) {
+                currencySelect.value = selectedCountry.currency;
+                currencySelect.disabled = true; // Disable currency field when auto-patched
+            } else {
+                currencySelect.value = '';
+                currencySelect.disabled = false;
+            }
+
+            // Auto-patch timezone
+            if (selectedCountry.timezones.length === 1) {
+                // Single timezone - auto-patch and disable
+                timezoneSelect.value = selectedCountry.timezones[0].zoneName;
+                timezoneSelect.disabled = true;
+            } else {
+                // Multiple timezones - don't disable, let user choose
+                timezoneSelect.value = '';
+                timezoneSelect.disabled = false;
+            }
+        }
+    }
+
     // Fetch companies
     async function fetchCompanies() {
-        showListLoader(true);
+        showApiLoader(true, "Loading Companies...");
         try {
             const response = await fetch(`${apiURL}/system/client/accounts`, {
                 headers: {
                     'Authorization': `Bearer ${cognitoToken}`,
                     'x-origin-ip': originIP,
                     'x-otp': otp,
-"x-compression": false,
+                    "x-compression": false,
                     'Content-Type': 'application/json'
                 }
             });
@@ -433,7 +505,7 @@
             console.error('Error fetching companies:', error);
             companyList.innerHTML = '<p class="text-red-500">Failed to load companies.</p>';
         } finally {
-            showListLoader(false);
+            showApiLoader(false);
         }
     }
 
@@ -449,30 +521,65 @@
                     <h3 class="text-lg font-semibold text-gray-800">${company.name}</h3>
                     <p class="text-sm text-gray-500">Account ID: ${company.accountId}</p>
                 </div>
-                <button class="edit-btn bg-yellow-500 text-white px-3 py-1 rounded-lg hover:bg-yellow-600 transition" data-account-id="${company.accountId}">
-                    Edit
-                </button>
+                <div class="d-flex flex-column gap-3">
+                    <button class="edit-btn bg-blue-500 text-white px-3 py-1 rounded-lg hover:bg-blue-600 transition" data-account-id="${company.accountId}">
+                        Edit
+                    </button>
+                    <button class="view-btn bg-green-500 text-white px-3 py-1 rounded-lg hover:bg-green-600 transition ">
+                        <a href="company-view.html?id=${company.accountId}" class="text-white text-decoration-none" >View</a>
+                    </a>
+                </div>
             `;
             companyList.appendChild(card);
         });
 
         // Add edit button listeners
         document.querySelectorAll('.edit-btn').forEach(btn => {
-            btn.addEventListener('click', () => editCompany(btn.dataset.accountId));
+            btn.addEventListener('click', (e) => {
+                e.preventDefault();
+                showButtonLoader(btn, 'Loading...');
+                editCompany(btn.dataset.accountId).finally(() => {
+                    hideButtonLoader(btn, 'Edit');
+                });
+            });
         });
     }
 
     // Show/hide list loader
-    function showListLoader(isLoading) {
-        companyListLoader.classList.toggle('hidden', !isLoading);
-        companyList.classList.toggle('opacity-50', isLoading);
-    }
+    // function showListLoader(isLoading) {
+    //     if (isLoading) {
+    //         apiLoader.style.display = 'flex';
+    //     } else {
+    //         apiLoader.style.display = 'none';
+    //     }
+    // }
+
 
     // Show/hide form loader
-    function showFormLoader(isLoading) {
-        formLoader.classList.toggle('hidden', !isLoading);
-        companyForm.classList.toggle('opacity-50', isLoading);
-        submitBtn.disabled = isLoading;
+    // function showApiLoader(isLoading) {
+    //     formLoader.classList.toggle('hidden', !isLoading);
+    //     companyForm.classList.toggle('opacity-50', isLoading);
+    //     submitBtn.disabled = isLoading;
+    // }
+
+    // Button loading utility functions
+    function showButtonLoader(button, loadingText = 'Loading...') {
+        button.dataset.originalText = button.textContent;
+        button.innerHTML = `
+            <div class="flex items-center space-x-2">
+                <div class="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                <span>${loadingText}</span>
+            </div>
+        `;
+        button.disabled = true;
+        button.classList.add('opacity-75', 'cursor-not-allowed');
+    }
+
+    function hideButtonLoader(button, originalText = null) {
+        button.textContent = originalText || button.dataset.originalText || 'Button';
+        button.disabled = false;
+        button.classList.remove('opacity-75', 'cursor-not-allowed');
+        delete button.dataset.originalText;
     }
 
     // Reset form
@@ -482,33 +589,52 @@
         formTitle.textContent = 'New Company';
         submitBtn.textContent = 'Create';
         prevBtn.textContent = 'Cancel';
+        currentStep = 0;
         isEditing = false;
         currentAccountId = null;
         resetAccountManagers();
+
+        // Reset disabled states
+        document.getElementById('currency').disabled = false;
+        document.getElementById('timezone').disabled = false;
     }
 
     // Open new company form
     newCompanyBtn.addEventListener('click', (e) => {
         e.preventDefault();
+
+        // Show loading state on button
+        showButtonLoader(newCompanyBtn, 'Loading...');
+
         resetForm();
+        fetchCountryAndTimezones();
         companyFormContainer.classList.remove('hidden');
         companyList.classList.add('hidden');
+
         loadConfigurationList(() => {
             updatePlanModules('Starter')
             subscriptionFetched = true;
             createCheckboxes(configurationData, document.getElementById('resources'));
+
+            // Hide loading state
+            hideButtonLoader(newCompanyBtn, 'New Company');
         });
     });
 
     // Edit company
     async function editCompany(accountId) {
-        showFormLoader(true);
+        showApiLoader(true, "Loading Company Info...");
         companyFormContainer.classList.remove('hidden');
         companyList.classList.add('hidden');
         formTitle.textContent = 'Edit Company';
         submitBtn.textContent = 'Update';
         isEditing = true;
         currentAccountId = accountId;
+
+        // Add accountId to URL params
+        const url = new URL(window.location);
+        url.searchParams.set('editId', accountId);
+        window.history.pushState({}, '', url);
 
         try {
             const response = await fetch(`${apiURL}/info/company`, {
@@ -523,13 +649,14 @@
             });
             if (!response.ok) throw new Error('Could not fetch company info');
             const data = await response.json();
+            fetchCountryAndTimezones();
             getSubscriptionData(accountId)
             preFillForm(data.data);
         } catch (error) {
             console.error('Error fetching company info:', error);
             alert('Failed to load company information.');
         } finally {
-            showFormLoader(false);
+            showApiLoader(false);
         }
     }
 
@@ -548,8 +675,46 @@
         document.getElementById('zip').value =  data?.billingAddress?.zip || '';
         document.getElementById('vat').value =  data?.billingAddress?.vat || '';
         document.getElementById('country').value = data?.billingAddress?.country || '';
-        document.getElementById('currency').value = data?.billingAddress?.currency || '';
-        document.getElementById('timezone').value = data?.billingAddress?.timezone || '';
+
+        // Store the original currency and timezone values before country change
+        const originalCurrency = data?.billingAddress?.currency || '';
+        const originalTimezone = data?.billingAddress?.timezone || '';
+
+        // Temporarily set the values
+        document.getElementById('currency').value = originalCurrency;
+        document.getElementById('timezone').value = originalTimezone;
+
+        // After a short delay, check if country-based auto-patching should occur
+        setTimeout(() => {
+            const countryValue = document.getElementById('country').value;
+            if (countryValue && countries) {
+                const selectedCountry = countries.find(country => country.name === countryValue);
+                if (selectedCountry) {
+                    // Check if we should auto-patch or keep original values
+                    if (selectedCountry.currency && selectedCountry.currency !== originalCurrency) {
+                        // Country has different currency - keep original and enable field
+                        document.getElementById('currency').disabled = false;
+                    } else if (selectedCountry.currency) {
+                        // Country currency matches - auto-patch and disable
+                        document.getElementById('currency').value = selectedCountry.currency;
+                        document.getElementById('currency').disabled = true;
+                    }
+
+                    if (selectedCountry.timezones.length === 1) {
+                        // Single timezone - check if it matches original
+                        if (selectedCountry.timezones[0].zoneName === originalTimezone) {
+                            document.getElementById('timezone').disabled = true;
+                        } else {
+                            document.getElementById('timezone').disabled = false;
+                        }
+                    } else {
+                        // Multiple timezones - always keep enabled
+                        document.getElementById('timezone').disabled = false;
+                    }
+                }
+            }
+        }, 100);
+
         document.getElementById('phone').value = data?.billingAddress?.phone || '';
         document.getElementById('fax').value = data?.billingAddress?.fax || '';
         document.getElementById('mapboxAPI').value = data?.mapboxAPI || '';
@@ -608,13 +773,6 @@
     document.getElementById('addAccountManagerBtn').onclick = function() {
         addAccountManagerForm();
     };
-
-    // Ensure at least one account manager form on page load
-    window.addEventListener('DOMContentLoaded', function() {
-        if (document.getElementById('accountManagersContainer')) {
-            resetAccountManagers();
-        }
-    });
 
     // On form reset, ensure at least one account manager form
     function resetAccountManagers() {
@@ -724,7 +882,7 @@
 
         console.log(formData)
         try {
-            showFormLoader(true);
+            showApiLoader(true, !isEditing ? "Creating Company..." : "Saving Company Info...");
             const response =
             !isEditing ? await fetch(`${apiURL}/system/client`, {
                 method: 'POST',
@@ -756,12 +914,13 @@
             alert(`Company ${isEditing ? 'updated' : 'created'} successfully.`);
             companyFormContainer.classList.add('hidden');
             companyList.classList.remove('hidden');
+            currentStep = 0;
             fetchCompanies();
         } catch (error) {
             console.error('Error submitting form:', error);
             alert(`Failed to ${isEditing ? 'update' : 'create'} company.`);
         } finally {
-            showFormLoader(false);
+            showApiLoader(false);
         }
     });
 
