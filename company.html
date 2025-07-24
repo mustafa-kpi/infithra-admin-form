@@ -394,8 +394,8 @@
                     'Authorization': `Bearer ${cognitoToken}`,
                     'x-origin-ip': originIP,
                     'x-otp': otp,
-                    'Content-Type': 'application/json',
-                    'X-Compression': false
+                    "x-compression": false,
+                    'Content-Type': 'application/json'
                 }
             });
             countries = await response.json();
@@ -495,7 +495,7 @@
                     'Authorization': `Bearer ${cognitoToken}`,
                     'x-origin-ip': originIP,
                     'x-otp': otp,
-                    'X-Compression': false,
+                    "x-compression": false,
                     'Content-Type': 'application/json'
                 }
             });
@@ -593,10 +593,62 @@
         isEditing = false;
         currentAccountId = null;
         resetAccountManagers();
+        
+        // Reset step indicator
+        resetStepIndicator();
 
         // Reset disabled states
         document.getElementById('currency').disabled = false;
         document.getElementById('timezone').disabled = false;
+    }
+    
+    // Reset step indicator to step 1
+    function resetStepIndicator() {
+        // Hide all steps
+        document.querySelectorAll('.step').forEach(step => {
+            step.classList.add('step-hidden');
+        });
+        
+        // Show step 1
+        const step1 = document.getElementById('step1');
+        if (step1) {
+            step1.classList.remove('step-hidden');
+        }
+        
+        // Reset step circles and lines
+        document.querySelectorAll('.step-circle').forEach((circle, index) => {
+            if (index === 0) {
+                circle.classList.add('active');
+            } else {
+                circle.classList.remove('active');
+            }
+        });
+        
+        document.querySelectorAll('.step-line').forEach((line, index) => {
+            if (index === 0) {
+                line.classList.add('active');
+            } else {
+                line.classList.remove('active');
+            }
+        });
+        
+        // Reset navigation buttons
+        const prevButton = document.getElementById('prevButton');
+        const nextButton = document.getElementById('nextButton');
+        const submitButton = document.getElementById('submitButton');
+        
+        if (prevButton) {
+            prevButton.textContent = 'Cancel';
+            prevButton.classList.remove('step-hidden');
+        }
+        if (nextButton) {
+            nextButton.classList.remove('step-hidden');
+        }
+        if (submitButton) {
+            submitButton.classList.add('step-hidden');
+        }
+        
+        console.log('Step indicator reset to step 1');
     }
 
     // Open new company form
@@ -644,8 +696,8 @@
                     'client': accountId,
                     'Authorization': `Bearer ${cognitoToken}`,
                     'x-origin-ip': originIP,
-                    'x-otp': otp,
                     'X-Compression': false
+                    'x-otp': otp
                 }
             });
             if (!response.ok) throw new Error('Could not fetch company info');
@@ -663,72 +715,166 @@
 
     // Pre-fill form
     function preFillForm(data) {
+        console.log('Prefilling form with data:', data);
+        
+        // Basic company information
         document.getElementById('name').value = data?.name || '';
         document.getElementById('legalName').value = data?.legalName || '';
         document.getElementById('website').value = data?.url || '';
         document.getElementById('logo').value = data?.logo || '';
         document.getElementById('locale').value = data?.locale || 'en';
         document.getElementById('accountId').value = data?.accountId || '';
+        
+        // Address information
         document.getElementById('addressLine1').value = data?.billingAddress?.addressLine1 || '';
         document.getElementById('addressLine2').value = data?.billingAddress?.addressLine2 || '';
         document.getElementById('state').value = data?.billingAddress?.state || '';
         document.getElementById('city').value = data?.billingAddress?.city || '';
-        document.getElementById('zip').value =  data?.billingAddress?.zip || '';
-        document.getElementById('vat').value =  data?.billingAddress?.vat || '';
-        document.getElementById('country').value = data?.billingAddress?.country || '';
-
-        // Store the original currency and timezone values before country change
-        const originalCurrency = data?.billingAddress?.currency || '';
-        const originalTimezone = data?.billingAddress?.timezone || '';
-
-        // Temporarily set the values
-        document.getElementById('currency').value = originalCurrency;
-        document.getElementById('timezone').value = originalTimezone;
-
-        // After a short delay, check if country-based auto-patching should occur
-        setTimeout(() => {
-            const countryValue = document.getElementById('country').value;
-            if (countryValue && countries) {
-                const selectedCountry = countries.find(country => country.name === countryValue);
-                if (selectedCountry) {
-                    // Check if we should auto-patch or keep original values
-                    if (selectedCountry.currency && selectedCountry.currency !== originalCurrency) {
-                        // Country has different currency - keep original and enable field
-                        document.getElementById('currency').disabled = false;
-                    } else if (selectedCountry.currency) {
-                        // Country currency matches - auto-patch and disable
-                        document.getElementById('currency').value = selectedCountry.currency;
-                        document.getElementById('currency').disabled = true;
-                    }
-
-                    if (selectedCountry.timezones.length === 1) {
-                        // Single timezone - check if it matches original
-                        if (selectedCountry.timezones[0].zoneName === originalTimezone) {
-                            document.getElementById('timezone').disabled = true;
-                        } else {
-                            document.getElementById('timezone').disabled = false;
-                        }
-                    } else {
-                        // Multiple timezones - always keep enabled
-                        document.getElementById('timezone').disabled = false;
-                    }
-                }
-            }
-        }, 100);
-
+        document.getElementById('zip').value = data?.billingAddress?.zip || '';
+        document.getElementById('vat').value = data?.billingAddress?.vat || '';
         document.getElementById('phone').value = data?.billingAddress?.phone || '';
         document.getElementById('fax').value = data?.billingAddress?.fax || '';
-        document.getElementById('mapboxAPI').value = data?.mapboxAPI || '';
-        // Account managers
+        
+        // MapboxAPI - Fix the patching issue
+        const mapboxField = document.getElementById('mapboxAPI');
+        if (mapboxField) {
+            mapboxField.value = data?.mapboxAPI || '';
+            console.log('MapboxAPI patched:', data?.mapboxAPI);
+        }
+
+        // Store the original values for country, currency, and timezone
+        const originalCountry = data?.billingAddress?.country || '';
+        const originalCurrency = data?.billingAddress?.currency || '';
+        const originalTimezone = data?.billingAddress?.timezone || '';
+        
+        console.log('Original values - Country:', originalCountry, 'Currency:', originalCurrency, 'Timezone:', originalTimezone);
+
+        // Set country first - but wait for countries to be loaded
+        const countryField = document.getElementById('country');
+        console.log('Country field element:', countryField);
+        console.log('Original country value:', originalCountry);
+
+        // Set currency and timezone with original values
+        const currencyField = document.getElementById('currency');
+        const timezoneField = document.getElementById('timezone');
+        
+        if (currencyField && originalCurrency) {
+            currencyField.value = originalCurrency;
+            currencyField.disabled = false; // Reset disabled state initially
+            console.log('Currency field patched:', originalCurrency);
+        }
+        
+        if (timezoneField && originalTimezone) {
+            timezoneField.value = originalTimezone;
+            timezoneField.disabled = false; // Reset disabled state initially
+            console.log('Timezone field patched:', originalTimezone);
+        }
+
+        // Wait for countries data to be loaded, then apply patching logic
+        setTimeout(() => {
+            if (originalCountry && countries && countries.length > 0) {
+                console.log('Applying country-based patching logic...');
+                console.log('Available countries:', countries.length);
+                
+                // Set country field value first
+                if (countryField && originalCountry) {
+                    countryField.value = originalCountry;
+                    console.log('Country field patched:', originalCountry);
+                }
+                
+                const selectedCountry = countries.find(country => country.name === originalCountry);
+                
+                if (selectedCountry) {
+                    console.log('Found country data:', selectedCountry);
+                    
+                    // Currency patching logic
+                    if (selectedCountry.currency) {
+                        if (selectedCountry.currency === originalCurrency) {
+                            // Country currency matches original - keep it and disable field
+                            if (currencyField) {
+                                currencyField.value = originalCurrency;
+                                currencyField.disabled = true;
+                                console.log('Currency auto-patched and disabled:', originalCurrency);
+                            }
+                        } else {
+                            // Country has different currency - keep original and enable field for manual selection
+                            if (currencyField) {
+                                currencyField.value = originalCurrency;
+                                currencyField.disabled = false;
+                                console.log('Currency kept as original (different from country default):', originalCurrency);
+                            }
+                        }
+                    } else {
+                        // Country has no default currency - keep original and enable field
+                        if (currencyField) {
+                            currencyField.value = originalCurrency;
+                            currencyField.disabled = false;
+                            console.log('Currency kept as original (no country default):', originalCurrency);
+                        }
+                    }
+
+                    // Timezone patching logic
+                    if (selectedCountry.timezones && selectedCountry.timezones.length === 1) {
+                        // Single timezone for country
+                        if (selectedCountry.timezones[0].zoneName === originalTimezone) {
+                            // Timezone matches - keep it and disable field
+                            if (timezoneField) {
+                                timezoneField.value = originalTimezone;
+                                timezoneField.disabled = true;
+                                console.log('Timezone auto-patched and disabled:', originalTimezone);
+                            }
+                        } else {
+                            // Different timezone - keep original and enable field
+                            if (timezoneField) {
+                                timezoneField.value = originalTimezone;
+                                timezoneField.disabled = false;
+                                console.log('Timezone kept as original (different from country default):', originalTimezone);
+                            }
+                        }
+                    } else {
+                        // Multiple timezones for country - keep original and enable field
+                        if (timezoneField) {
+                            timezoneField.value = originalTimezone;
+                            timezoneField.disabled = false;
+                            console.log('Timezone kept as original (multiple options for country):', originalTimezone);
+                        }
+                    }
+                } else {
+                    console.log('Country not found in countries data:', originalCountry);
+                }
+            } else {
+                console.log('Countries data not loaded or no country specified');
+                console.log('Countries loaded:', countries ? countries.length : 'null');
+                console.log('Original country:', originalCountry);
+                
+                // If countries data is not loaded but we have a country value, set it anyway
+                if (countryField && originalCountry) {
+                    countryField.value = originalCountry;
+                    console.log('Country field patched (fallback):', originalCountry);
+                }
+            }
+        }, 500); // Further increased delay to ensure countries data is loaded
+
+        // Account managers - Fix the patching issue
         const container = document.getElementById('accountManagersContainer');
         container.innerHTML = '';
-        if (Array.isArray(data?.accountManagers) && data.accountManagers.length > 0) {
+        
+        if (Array.isArray(data?.accountManager) && data.accountManager.length > 0) {
+            // Data has accountManager as array
+            data.accountManager.forEach(am => addAccountManagerForm(am));
+            console.log('Account managers patched from array:', data.accountManager.length, 'managers');
+        } else if (Array.isArray(data?.accountManagers) && data.accountManagers.length > 0) {
+            // Data has accountManagers as array
             data.accountManagers.forEach(am => addAccountManagerForm(am));
-        } else if (data?.accountManager) {
-            // If only a single accountManager object exists, treat as array of one
+            console.log('Account managers patched from accountManagers array:', data.accountManagers.length, 'managers');
+        } else if (data?.accountManager && !Array.isArray(data.accountManager)) {
+            // Single account manager object
             addAccountManagerForm(data.accountManager);
+            console.log('Single account manager patched:', data.accountManager);
         } else {
-            addAccountManagerForm(); // Add empty form if none
+            // No account managers - add empty form
+            addAccountManagerForm();
+            console.log('No account managers found, added empty form');
         }
     }
 
@@ -782,49 +928,6 @@
         addAccountManagerForm(); // Always add one by default
     }
 
-    // Update resetForm to also reset account managers
-    function resetForm() {
-        companyForm.reset();
-        document.getElementById('accountId').value = '';
-        formTitle.textContent = 'New Company';
-        submitBtn.textContent = 'Create';
-        prevBtn.textContent = 'Cancel';
-        isEditing = false;
-        currentAccountId = null;
-        resetAccountManagers();
-    }
-
-    // Update preFillForm to fill account managers
-    function preFillForm(data) {
-        document.getElementById('name').value = data?.name || '';
-        document.getElementById('legalName').value = data?.legalName || '';
-        document.getElementById('website').value = data?.url || '';
-        document.getElementById('logo').value = data?.logo || '';
-        document.getElementById('locale').value = data?.locale || 'en';
-        document.getElementById('accountId').value = data?.accountId || '';
-        document.getElementById('addressLine1').value = data?.billingAddress?.addressLine1 || '';
-        document.getElementById('addressLine2').value = data?.billingAddress?.addressLine2 || '';
-        document.getElementById('state').value = data?.billingAddress?.state || '';
-        document.getElementById('city').value = data?.billingAddress?.city || '';
-        document.getElementById('zip').value =  data?.billingAddress?.zip || '';
-        document.getElementById('vat').value =  data?.billingAddress?.vat || '';
-        document.getElementById('country').value = data?.billingAddress?.country || '';
-        document.getElementById('currency').value = data?.billingAddress?.currency || '';
-        document.getElementById('timezone').value = data?.billingAddress?.timezone || '';
-        document.getElementById('phone').value = data?.billingAddress?.phone || '';
-        document.getElementById('fax').value = data?.billingAddress?.fax || '';
-        // Account managers
-        const container = document.getElementById('accountManagersContainer');
-        container.innerHTML = '';
-        if (Array.isArray(data?.accountManager) && data.accountManager.length > 0) {
-            data.accountManager.forEach(am => addAccountManagerForm(am));
-        } else if (data?.accountManager) {
-            // If only a single accountManager object exists, treat as array of one
-            addAccountManagerForm(data.accountManager);
-        } else {
-            addAccountManagerForm(); // Add empty form if none
-        }
-    }
 
     // Submit form
     companyForm.addEventListener('submit', async (event) => {
@@ -891,8 +994,8 @@
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${cognitoToken}`,
                     'x-origin-ip': originIP,
-                    'x-otp': otp,
                     'X-Compression': false
+                    'x-otp': otp
                 },
                 body: JSON.stringify(formData)
             }) :
@@ -902,8 +1005,8 @@
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${cognitoToken}`,
                     'x-origin-ip': originIP,
-                    'x-otp': otp,
                     'X-Compression': false
+                    'x-otp': otp
                 },
                 body: JSON.stringify(formData)
             });
@@ -917,7 +1020,11 @@
             alert(`Company ${isEditing ? 'updated' : 'created'} successfully.`);
             companyFormContainer.classList.add('hidden');
             companyList.classList.remove('hidden');
+            
+            // Reset step to 1 and update step indicator
             currentStep = 0;
+            resetStepIndicator();
+            
             fetchCompanies();
         } catch (error) {
             console.error('Error submitting form:', error);
@@ -1145,8 +1252,8 @@
                 'Authorization': `Bearer ${cognitoToken}`,
                 'x-compression': 'false',
                 'x-origin-ip': originIP,
-                'x-otp': otp,
                 'X-Compression': false
+                'x-otp': otp
             }
         })
             .then(response => response.json())
@@ -1168,8 +1275,8 @@
                 'Authorization': `Bearer ${cognitoToken}`,
                 'x-compression': 'false',
                 'x-origin-ip': originIP,
-                'x-otp': otp,
                 'X-Compression': false
+                'x-otp': otp
             }
         })
             .then(response => response.json())
@@ -1198,8 +1305,8 @@
                 'Authorization': `Bearer ${cognitoToken}`,
                 'x-compression': 'false',
                 'x-origin-ip': originIP,
-                'x-otp': otp,
                 'X-Compression': false
+                'x-otp': otp
             },
         })
             .then(response => {
