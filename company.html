@@ -393,7 +393,6 @@
                 headers: {
                     'Authorization': `Bearer ${cognitoToken}`,
                     'x-origin-ip': originIP,
-                    'x-otp': otp,
                     "x-compression": false,
                     'Content-Type': 'application/json'
                 }
@@ -494,7 +493,6 @@
                 headers: {
                     'Authorization': `Bearer ${cognitoToken}`,
                     'x-origin-ip': originIP,
-                    'x-otp': otp,
                     "x-compression": false,
                     'Content-Type': 'application/json'
                 }
@@ -593,7 +591,7 @@
         isEditing = false;
         currentAccountId = null;
         resetAccountManagers();
-        
+
         // Reset step indicator
         resetStepIndicator();
 
@@ -601,20 +599,20 @@
         document.getElementById('currency').disabled = false;
         document.getElementById('timezone').disabled = false;
     }
-    
+
     // Reset step indicator to step 1
     function resetStepIndicator() {
         // Hide all steps
         document.querySelectorAll('.step').forEach(step => {
             step.classList.add('step-hidden');
         });
-        
+
         // Show step 1
         const step1 = document.getElementById('step1');
         if (step1) {
             step1.classList.remove('step-hidden');
         }
-        
+
         // Reset step circles and lines
         document.querySelectorAll('.step-circle').forEach((circle, index) => {
             if (index === 0) {
@@ -623,7 +621,7 @@
                 circle.classList.remove('active');
             }
         });
-        
+
         document.querySelectorAll('.step-line').forEach((line, index) => {
             if (index === 0) {
                 line.classList.add('active');
@@ -631,12 +629,12 @@
                 line.classList.remove('active');
             }
         });
-        
+
         // Reset navigation buttons
         const prevButton = document.getElementById('prevButton');
         const nextButton = document.getElementById('nextButton');
         const submitButton = document.getElementById('submitButton');
-        
+
         if (prevButton) {
             prevButton.textContent = 'Cancel';
             prevButton.classList.remove('step-hidden');
@@ -647,7 +645,7 @@
         if (submitButton) {
             submitButton.classList.add('step-hidden');
         }
-        
+
         console.log('Step indicator reset to step 1');
     }
 
@@ -697,7 +695,6 @@
                     'Authorization': `Bearer ${cognitoToken}`,
                     'x-origin-ip': originIP,
                     'X-Compression': false
-                    'x-otp': otp
                 }
             });
             if (!response.ok) throw new Error('Could not fetch company info');
@@ -716,7 +713,7 @@
     // Pre-fill form
     function preFillForm(data) {
         console.log('Prefilling form with data:', data);
-        
+
         // Basic company information
         document.getElementById('name').value = data?.name || '';
         document.getElementById('legalName').value = data?.legalName || '';
@@ -724,7 +721,7 @@
         document.getElementById('logo').value = data?.logo || '';
         document.getElementById('locale').value = data?.locale || 'en';
         document.getElementById('accountId').value = data?.accountId || '';
-        
+
         // Address information
         document.getElementById('addressLine1').value = data?.billingAddress?.addressLine1 || '';
         document.getElementById('addressLine2').value = data?.billingAddress?.addressLine2 || '';
@@ -734,7 +731,7 @@
         document.getElementById('vat').value = data?.billingAddress?.vat || '';
         document.getElementById('phone').value = data?.billingAddress?.phone || '';
         document.getElementById('fax').value = data?.billingAddress?.fax || '';
-        
+
         // MapboxAPI - Fix the patching issue
         const mapboxField = document.getElementById('mapboxAPI');
         if (mapboxField) {
@@ -746,7 +743,7 @@
         const originalCountry = data?.billingAddress?.country || '';
         const originalCurrency = data?.billingAddress?.currency || '';
         const originalTimezone = data?.billingAddress?.timezone || '';
-        
+
         console.log('Original values - Country:', originalCountry, 'Currency:', originalCurrency, 'Timezone:', originalTimezone);
 
         // Set country first - but wait for countries to be loaded
@@ -757,13 +754,13 @@
         // Set currency and timezone with original values
         const currencyField = document.getElementById('currency');
         const timezoneField = document.getElementById('timezone');
-        
+
         if (currencyField && originalCurrency) {
             currencyField.value = originalCurrency;
             currencyField.disabled = false; // Reset disabled state initially
             console.log('Currency field patched:', originalCurrency);
         }
-        
+
         if (timezoneField && originalTimezone) {
             timezoneField.value = originalTimezone;
             timezoneField.disabled = false; // Reset disabled state initially
@@ -775,18 +772,18 @@
             if (originalCountry && countries && countries.length > 0) {
                 console.log('Applying country-based patching logic...');
                 console.log('Available countries:', countries.length);
-                
+
                 // Set country field value first
                 if (countryField && originalCountry) {
                     countryField.value = originalCountry;
                     console.log('Country field patched:', originalCountry);
                 }
-                
+
                 const selectedCountry = countries.find(country => country.name === originalCountry);
-                
+
                 if (selectedCountry) {
                     console.log('Found country data:', selectedCountry);
-                    
+
                     // Currency patching logic
                     if (selectedCountry.currency) {
                         if (selectedCountry.currency === originalCurrency) {
@@ -846,7 +843,7 @@
                 console.log('Countries data not loaded or no country specified');
                 console.log('Countries loaded:', countries ? countries.length : 'null');
                 console.log('Original country:', originalCountry);
-                
+
                 // If countries data is not loaded but we have a country value, set it anyway
                 if (countryField && originalCountry) {
                     countryField.value = originalCountry;
@@ -858,7 +855,7 @@
         // Account managers - Fix the patching issue
         const container = document.getElementById('accountManagersContainer');
         container.innerHTML = '';
-        
+
         if (Array.isArray(data?.accountManager) && data.accountManager.length > 0) {
             // Data has accountManager as array
             data.accountManager.forEach(am => addAccountManagerForm(am));
@@ -994,8 +991,7 @@
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${cognitoToken}`,
                     'x-origin-ip': originIP,
-                    'X-Compression': false
-                    'x-otp': otp
+                    'X-Compression': false,
                 },
                 body: JSON.stringify(formData)
             }) :
@@ -1006,7 +1002,6 @@
                     'Authorization': `Bearer ${cognitoToken}`,
                     'x-origin-ip': originIP,
                     'X-Compression': false
-                    'x-otp': otp
                 },
                 body: JSON.stringify(formData)
             });
@@ -1020,11 +1015,11 @@
             alert(`Company ${isEditing ? 'updated' : 'created'} successfully.`);
             companyFormContainer.classList.add('hidden');
             companyList.classList.remove('hidden');
-            
+
             // Reset step to 1 and update step indicator
             currentStep = 0;
             resetStepIndicator();
-            
+
             fetchCompanies();
         } catch (error) {
             console.error('Error submitting form:', error);
@@ -1253,7 +1248,6 @@
                 'x-compression': 'false',
                 'x-origin-ip': originIP,
                 'X-Compression': false
-                'x-otp': otp
             }
         })
             .then(response => response.json())
@@ -1276,7 +1270,6 @@
                 'x-compression': 'false',
                 'x-origin-ip': originIP,
                 'X-Compression': false
-                'x-otp': otp
             }
         })
             .then(response => response.json())
@@ -1306,7 +1299,6 @@
                 'x-compression': 'false',
                 'x-origin-ip': originIP,
                 'X-Compression': false
-                'x-otp': otp
             },
         })
             .then(response => {
