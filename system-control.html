@@ -339,7 +339,7 @@
             })
                 .then(response => response.json())
                 .then(data => {
-                    const clientSelects = ['#seedClient', '#updateClients', '#resetClient', '#processClient'];
+                    const clientSelects = ['#processClient'];
                     clientSelects.forEach(selectId => {
                         const select = document.querySelector(selectId);
                         select.innerHTML = ''; // Clear any existing options
