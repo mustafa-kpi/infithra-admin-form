@@ -82,8 +82,8 @@ window.onload = async () => {
 
     if(window.location.href.includes('system-control')) {
         populateClients();
-        populateModels();
-        fetchMigrationFiles();
+        // populateModels();
+        // fetchMigrationFiles();
         console.log("✅ System Page functions initialized");
     }
 
