@@ -36,16 +36,15 @@ const getCognitoCredentials = () => {
 
 window.onload = async () => {
     console.log("🟢 Document loaded");
+    await refreshIdTokenIfNeeded();
+
 
     const ipResponse = await fetch('https://api64.ipify.org?format=json');
     const ipData = await ipResponse.json();
     originIP = ipData.ip;
 
     cognitoToken = sessionStorage.getItem('cognitoToken');
-    otp = sessionStorage.getItem('x-otp');
     selectedEnv = sessionStorage.getItem('selectedEnv');
-    console.log("📩 ~ otp:", otp);
-
     if(selectedEnv){
         apiURL = getApiUrlByEnvironment(selectedEnv);
         apiManintenanceURL = getApiManintenanceUrlByEnvironment(selectedEnv);
@@ -54,8 +53,8 @@ window.onload = async () => {
         updateApiURL('production')
     }
 
-    if (!cognitoToken || !otp) {
-        console.log("🚫 ~ Missing cognitoToken or otp. Redirecting to login.");
+    if (!cognitoToken) {
+        console.log("🚫 ~ Missing cognitoToken. Redirecting to login.");
 
         if (!window.location.href.includes('login')) {
             window.location.href = 'login.html';
@@ -92,9 +91,10 @@ window.onload = async () => {
         console.log("✅ System Page functions initialized");
     }
 
-    if(window.location.href.includes('system-maintenance')) {
+    if(window.location.href.includes('old-system-maintenance') || window.location.href.includes('system-maintenance')) {
         loadCurrentMaintenance();
         loadMaintenanceHistory();
+        populateMaintenanceAccountDropdown();
 
         // Set default date to today and time to next hour
         const now = new Date();
@@ -108,7 +108,62 @@ window.onload = async () => {
         document.getElementById('endTime').value = endTime;
     }
 
+    setInterval(async () => {
+        await refreshIdTokenIfNeeded();
+    }, 15 * 60 * 1000 ); // Refresh every 15 minutes
+    console.log("🕒 Token refresh interval set for every 15 minutes");
+
 };
+
+// Refresh token logic: call this before API calls if needed
+async function refreshIdTokenIfNeeded() {
+    const expiry = sessionStorage.getItem('cognitoTokenExpiry');
+    console.log("🔄 Checking token expiry status...");
+    if (expiry && Date.now() > Number(expiry)) {
+        try{
+            console.log("⚠️ Token expired, refreshing...");
+
+            const poolData = {
+                UserPoolId: getCognitoCredentials().poolID,
+                ClientId: getCognitoCredentials().clientID
+            };
+
+            const userPool = new AmazonCognitoIdentity.CognitoUserPool(poolData);
+            const email = sessionStorage.getItem('email');
+            const userData = { Username: email, Pool: userPool };
+            const cognitoUser = new AmazonCognitoIdentity.CognitoUser(userData);
+            const refreshToken = new AmazonCognitoIdentity.CognitoRefreshToken({ RefreshToken: sessionStorage.getItem('refreshToken') });
+
+            return new Promise((resolve, reject) => {
+                console.log("🔄 Attempting to refresh token for user:", email);
+                cognitoUser.refreshSession(refreshToken, (err, session) => {
+                    if (err) {
+                        console.error("❌ Token refresh failed:", err);
+                        messageBox.className = 'dangerMessageBox';
+                        messageBox.innerText = 'Session refresh failed: ' + (err.message || 'Unknown error');
+                        messageBox.style.display = 'block';
+                        reject(err);
+                    } else {
+                        console.log("✅ Token refreshed successfully");
+                        sessionStorage.setItem('cognitoToken', session.getIdToken().getJwtToken());
+                        sessionStorage.setItem('refreshToken', session.getRefreshToken().getToken());
+                        // Update expiry
+                        const idTokenExp = session.getIdToken().payload.exp * 1000;
+                        sessionStorage.setItem('cognitoTokenExpiry', idTokenExp);
+                        console.log("📅 New token expiry set to:", new Date(idTokenExp).toLocaleString());
+                        resolve(session.getIdToken().getJwtToken());
+                    }
+                });
+            });
+        }catch (error) {
+            console.error("❌ Error during token refresh:", error);
+            messageBox.className = 'dangerMessageBox';
+            messageBox.innerText = 'Session refresh failed: ' + (error.message || 'Unknown error');
+            messageBox.style.display = 'block';
+            logout();
+        }
+    }
+}
 
 
 function getApiUrlByEnvironment(environment) {
