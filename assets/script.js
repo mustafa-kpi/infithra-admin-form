@@ -5,32 +5,32 @@ const getCognitoCredentials = () => {
     const environment = sessionStorage.getItem('selectedEnv');
 
     switch (environment) {
-      case "local":
-        return {
-            poolID: "us-east-1_B0evpPXDl",
-            clientID: "68cf37qtu8rusjha7ot8f20q3m",
-            region: "us-east-1"
-        };
-      case "development":
-        return {
-            poolID: "us-east-1_B0evpPXDl",
-            clientID: "68cf37qtu8rusjha7ot8f20q3m",
-            region: "us-east-1"
-        };
-      case "staging":
-        return {
-            poolID: "us-east-1_QQBXg3f2l",
-            clientID: "2qpj2s3vv3jninl7hoql5nf5du",
-            region: "us-east-1"
-        };
-      case "production":
-        return {
-            poolID: "me-south-1_qcoTXCxZJ",
-            clientID: "3c9bc02c962pu6foj4vkkas0eo",
-            region: "me-south-1"
-        };
-      default:
-        return {};
+        case "local":
+            return {
+                poolID: "us-east-1_B0evpPXDl",
+                clientID: "68cf37qtu8rusjha7ot8f20q3m",
+                region: "us-east-1"
+            };
+        case "development":
+            return {
+                poolID: "us-east-1_B0evpPXDl",
+                clientID: "68cf37qtu8rusjha7ot8f20q3m",
+                region: "us-east-1"
+            };
+        case "staging":
+            return {
+                poolID: "us-east-1_QQBXg3f2l",
+                clientID: "2qpj2s3vv3jninl7hoql5nf5du",
+                region: "us-east-1"
+            };
+        case "production":
+            return {
+                poolID: "me-south-1_qcoTXCxZJ",
+                clientID: "3c9bc02c962pu6foj4vkkas0eo",
+                region: "me-south-1"
+            };
+        default:
+            return {};
     }
   };
 
